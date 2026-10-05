@@ -7,6 +7,10 @@
 
 Node.js（实测 v24）· 零 npm 依赖 · [MIT](LICENSE)
 
+![示例站点](docs/img/site.png)
+
+<sub>示例站点：跑完下面的「起步」，再写几条自己的卡片就是这个样子（图为演示数据，本仓库不含内容数据）。</sub>
+
 ## 快速开始
 
 **人类**：在 GitHub 页面点 **Use this template → Create a new repository**，得到属于你自己的新仓库。
@@ -28,6 +32,7 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 ```
 词条图鉴模板/
 ├── CONTRACT.md                 内容线与工程线的数据契约 —— 派生时读一遍，一般不改
+├── CHANGELOG.md                本模板自身的版本变化
 ├── content/                    【内容线】日常唯一要写的地方
 │   ├── 站点配置.js              品牌 / 主题 / 分类 / 主题色 —— 派生时必改
 │   ├── 内容规范.md              字段表、写作纪律、编号规则 —— 派生时改示例与行业名
@@ -47,7 +52,8 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 ├── templates/                  母版与可复用页面（都不是构建脚本读的，按需复制）
 │   ├── 词条图鉴模板-v5.html     单文件引擎母版（含 PYI 拼音表）
 │   └── 项目进度模板-v1.html     进度看板模板（只改数据区，零外部请求）
-└── docs/派生与排错.md           接线点行号、常见红字、源项目痕迹对照
+├── docs/派生与排错.md           接线点行号、常见红字、源项目痕迹对照（README 配图在 docs/img/）
+└── .github/workflows/smoke.yml CI 冒烟测试：推送即验证「空骨架 → 起步 → 校验通过」
 ```
 
 ## 怎么用它派生
@@ -71,6 +77,10 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 - 零依赖、零外部请求，也可以直接丢给浏览器；
 - 它**不参与构建**，改它不会影响站点产物；字段形状照抄文件里的示例数据即可。
 
+![项目进度看板](docs/img/progress.png)
+
+<sub>进度看板：只改文件里的 `DATA` 数据区，整页自己重排。</sub>
+
 ## 环境要求
 
 - **Node.js**：唯一硬依赖，零第三方包（没有 `package.json`，不需要 `npm install`）。
@@ -80,11 +90,13 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 
 ## 版本与来源
 
-- **v1.1.0**（当前，tag `v1.1.0`）：新增 `templates/项目进度模板-v1.html`——单文件进度看板模板（去数据空壳 + 字段形状示例）。
+- **v1.1.1**（当前，tag `v1.1.1`）：README 配图（示例站点 + 进度看板，均为本地图片）、`CHANGELOG.md`、CI 冒烟测试。
+- **v1.1.0**（tag `v1.1.0`）：新增 `templates/项目进度模板-v1.html`——单文件进度看板模板（去数据空壳 + 字段形状示例）。
 - **v1.0.1**（tag `v1.0.1`）：新增 `engineering/起步.mjs` 与 `docs/派生与排错.md`，README 由 206 行精简至 80 行；骨架 14 个文件未动。
 - **v1.0.0**（tag `v1.0.0`）：骨架 14 个文件 + README + LICENSE 的首个完整快照。
 - 骨架 14 个文件**自一个已在运行的图鉴项目抽出，源提交 `af88476`，与该提交逐字节一致**（SHA256 全等），未含该项目任何内容数据、进度文档与产物。因此文件注释里留有指向源项目内部文档的悬空引用，清单见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
 - 派生新项目时，请记下「派生自哪一版」。
+- 各版本的变化见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 许可证
 

@@ -1,0 +1,20 @@
+# 工具运行态：.workbuddy/ 只保留 memory/（项目过程记录，随项目入库）
+.workbuddy/*
+!.workbuddy/memory/
+
+# Trae 工具目录：本项目不用它承载文档（docs/plans/ 与 .workbuddy/memory/ 才是文档落点，见 AGENTS.md §3）
+# 唯一例外：Trae 只从 .trae/skills/ 读「项目级技能」，那里仅放 3 行跳转文件，技能正文在 skills/ 下
+.trae/
+
+# 由源生成的产物：dist/ 可由 content/ 与 templates/ 重新生成（勿手改），不进版本库
+# 要留痕的是 release/ —— 使用者手动定版的对外快照（进库，故此处不忽略）
+dist/
+
+# 应用发布相关（工具标识不入库）
+# .wbapp_*.genie：发布工具生成的应用标识文件（记录 appId / 名称 / 入口）
+.wbapp_*.genie
+
+# 系统杂项
+Thumbs.db
+Desktop.ini
+*.tmp

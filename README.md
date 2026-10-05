@@ -13,7 +13,7 @@ Node.js（实测 v24）· 零 npm 依赖 · [MIT](LICENSE)
 **Agent / 命令行**：直接 clone（模板仓库没有你需要继承的提交历史）。
 
 ```bash
-git clone https://github.com/NahidaTribbie/glossary-atlas-template.git 我的图鉴
+git clone https://github.com/Columbinagi/glossary-atlas-template.git 我的图鉴
 cd 我的图鉴
 node engineering/起步.mjs      # 一条命令：建骨架 → 拼合 → 校验，期望看到「校验全部通过」
 node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
@@ -77,4 +77,4 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 
 ## 许可证
 
-[MIT](LICENSE) © 2026 NahidaTribbie
+[MIT](LICENSE) © 2026 凪の海 (Columbinagi)

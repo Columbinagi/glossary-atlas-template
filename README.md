@@ -90,14 +90,11 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 
 ## 版本与来源
 
-- **v1.1.1**（当前，tag `v1.1.1`）：README 配图（示例站点 + 进度看板，均为本地图片）、`CHANGELOG.md`、CI 冒烟测试。
-- **v1.1.0**（tag `v1.1.0`）：新增 `templates/项目进度模板-v1.html`——单文件进度看板模板（去数据空壳 + 字段形状示例）。
-- **v1.0.1**（tag `v1.0.1`）：新增 `engineering/起步.mjs` 与 `docs/派生与排错.md`，README 由 206 行精简至 80 行；骨架 14 个文件未动。
-- **v1.0.0**（tag `v1.0.0`）：骨架 14 个文件 + README + LICENSE 的首个完整快照。
-- 骨架 14 个文件**自一个已在运行的图鉴项目抽出，源提交 `af88476`，与该提交逐字节一致**（SHA256 全等），未含该项目任何内容数据、进度文档与产物。因此文件注释里留有指向源项目内部文档的悬空引用，清单见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
-- 派生新项目时，请记下「派生自哪一版」。
-- 各版本的变化见 [CHANGELOG.md](CHANGELOG.md)。
+- **当前版本**：`v1.1.1` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
+- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`，与该提交**逐字节一致**（SHA256 全等），**未含该项目任何内容数据、进度文档与产物**。文件注释里因此留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
+- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.1（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
 
 ## 许可证
 
-[MIT](LICENSE) © 2026 凪の海 (Columbinagi)
+[MIT](LICENSE) © 2026 凪の海 (Columbinagi) —— 随便用、随便改、随便再分发，保留版权声明即可。

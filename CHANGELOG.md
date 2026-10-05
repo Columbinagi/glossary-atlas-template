@@ -9,12 +9,16 @@
 ### 新增
 
 - `docs/img/site.png`、`docs/img/progress.png`：README 配图（本地图片，**不引入任何外链**）
-- `.github/workflows/smoke.yml`：CI 冒烟测试——每次推送自动验证「空骨架 → 起步 → 校验通过」
 - `CHANGELOG.md`：本文件
 
 ### 变更
 
 - README：首屏加示例站点截图；「附：项目进度看板」一节加看板截图
+- README：「版本与来源」收敛为「当前版本 / 怎么更新 / 来源」三条，逐版历史移入本文件；许可行补一句大白话
+
+### 未完成（已知）
+
+- CI 冒烟测试脚本已写好，但推送需要 token 具备 `workflow` 权限（`gh auth refresh -h github.com -s workflow`），本版未包含
 
 ## v1.1.0 — 2026-10-05
 

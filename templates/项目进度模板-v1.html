@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>项目进度 · 替换成你的项目名</title>
+<meta name="theme-color" content="#3559d8">
+<style>
+/* ============================================================
+   项目进度页 · 单文件 / 零外部请求
+   维护方式：只改页面底部数据区的 DATA 对象，全页自动重排
+   ============================================================ */
+:root{
+  color-scheme:light;
+  --brand:#3559d8; --brand-light:#edf0fb;
+  --green:#00b42a; --green-light:#e8ffea;
+  --gray-dot:#c9cdd4;
+  --bg:#f7f8fa; --surface:#fff; --text:#1d2129; --text-2:#4e5969; --text-3:#86909c;
+  --border:#e5e6eb; --border-light:#f0f1f3;
+  --shadow:0 1px 2px rgba(29,33,41,.05);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --brand:#7b93ea; --brand-light:rgba(123,147,234,.15);
+    --green:#4ade80; --green-light:rgba(74,222,128,.13);
+    --gray-dot:#4a5261;
+    --bg:#0e1014; --surface:#171b24; --text:#e6e8ec; --text-2:#aab3bf; --text-3:#78828f;
+    --border:#282e3a; --border-light:#1f232c;
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+
+.wrap{max-width:1080px;margin:0 auto;padding:34px 22px 70px}
+.head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.head h1{font-size:23px;font-weight:700;letter-spacing:-.02em}
+.head .upd{font-size:12.5px;color:var(--text-3)}
+.lead{color:var(--text-2);font-size:14px;margin-bottom:26px}
+
+/* 卡片与分节标题 */
+.card{background:var(--surface);border:1px solid var(--border-light);border-radius:14px;
+  padding:20px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+.sec{font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.08em;margin-bottom:14px}
+.sec .hint{font-weight:400;letter-spacing:0;font-size:12.5px}
+
+/* ① 状态 */
+.status{border-color:var(--brand);background:var(--brand-light)}
+.status .now{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.status .line{font-size:14.5px;color:var(--text);margin-top:8px}
+.status .aside{font-size:13px;color:var(--text-2);margin-top:6px}
+.bar{margin-top:16px}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:6px}
+.bar-top b{font-size:14px}
+.track{height:9px;border-radius:99px;background:var(--surface);border:1px solid var(--border-light);overflow:hidden}
+.track i{display:block;height:100%;background:var(--brand);border-radius:99px}
+.track i.g{background:var(--green)}
+
+/* ② 阶段路线 */
+.steps{display:flex;gap:0;flex-wrap:wrap}
+.step{flex:1 1 150px;min-width:130px;position:relative;padding:0 10px 0 0}
+.step .dot{width:13px;height:13px;border-radius:50%;background:var(--gray-dot);display:block;margin-bottom:9px}
+.step.done .dot{background:var(--green)}
+.step.doing .dot{background:var(--brand);box-shadow:0 0 0 4px var(--brand-light)}
+.step .n{font-size:11.5px;color:var(--text-3);font-family:var(--mono)}
+.step .nm{font-size:14.5px;font-weight:650}
+.step.doing .nm{color:var(--brand)}
+.step.done .nm{color:var(--text-2)}
+.step.todo .nm{color:var(--text-3);font-weight:500}
+.step .ds{font-size:12.5px;color:var(--text-3);line-height:1.6;margin-top:2px}
+.step .wh{font-size:11.5px;color:var(--text-3);font-family:var(--mono);margin-top:5px}
+
+/* ③ 首期 12 条 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:12px}
+.cell{border:1px solid var(--border-light);border-radius:11px;padding:12px 13px;background:var(--bg);position:relative}
+.cell.done{border-color:var(--green);background:var(--green-light)}
+.cell.doing{border-color:var(--brand);background:var(--brand-light)}
+.cell .cn{font-size:11.5px;color:var(--text-3);font-family:var(--mono)}
+.cell .cname{font-size:14.5px;font-weight:650;margin:1px 0 4px}
+.cell.todo .cname{font-weight:500;color:var(--text-2)}
+.cell .cnote{font-size:12.5px;color:var(--text-3);line-height:1.55}
+.cell .cflags{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11.5px;padding:1px 7px;border-radius:4px;background:var(--surface);color:var(--text-2);border:1px solid var(--border-light)}
+.tag.ok{background:var(--green);color:#fff;border-color:var(--green)}
+@media (prefers-color-scheme:dark){ .tag.ok{color:#0e1014} }
+
+/* ④ 时间线 */
+.tl{border-left:2px solid var(--border);margin-left:5px;padding-left:18px}
+.tl-item{position:relative;padding-bottom:18px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:before{content:"";position:absolute;left:-25px;top:7px;width:9px;height:9px;border-radius:50%;
+  background:var(--brand);box-shadow:0 0 0 3px var(--surface)}
+.tl-t{font-size:11.5px;color:var(--text-3);font-family:var(--mono)}
+.tl-h{font-size:14.5px;font-weight:650}
+.tl-d{font-size:13px;color:var(--text-2);line-height:1.65}
+.tl-e{font-size:12px;color:var(--text-3);font-family:var(--mono);margin-top:3px}
+
+/* ⑤ 待办 */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.todo-box{border:1px solid var(--border-light);border-radius:11px;padding:13px 15px;background:var(--bg)}
+.todo-box h3{font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:9px}
+.todo-box.waiting h3{color:var(--brand)}
+.todo-box.done h3{color:var(--green)}
+.todo-box ul{margin:0;padding-left:18px}
+.todo-box li{font-size:13.5px;color:var(--text-2);line-height:1.65;margin-bottom:5px}
+.todo-box li b{color:var(--text);font-weight:600}
+.todo-box li:last-child{margin-bottom:0}
+.own{font-size:11.5px;padding:0 6px;border-radius:4px;background:var(--surface);border:1px solid var(--border-light);color:var(--text-3);margin-right:5px}
+
+/* ④-b 词条按主题分组、每组单独可折（2026-10-01：只折会持续变长的块） */
+.tgroup{border:1px solid var(--border-light);border-radius:11px;background:var(--bg);margin-bottom:10px}
+.tgroup:last-child{margin-bottom:0}
+.tgroup>summary{display:flex;align-items:baseline;gap:8px;padding:11px 15px;cursor:pointer;
+  font-size:13.5px;font-weight:650;color:var(--text-2);list-style:none}
+.tgroup>summary::-webkit-details-marker{display:none}
+.tgroup>summary:before{content:"";flex:none;width:6px;height:6px;margin-right:2px;
+  border-right:1.6px solid var(--text-3);border-bottom:1.6px solid var(--text-3);
+  transform:rotate(-45deg) translate(1px,-1px)}
+.tgroup[open]>summary:before{transform:rotate(45deg)}
+.tgroup>summary:hover{color:var(--brand)}
+.tgroup>summary i{font-style:normal;font-size:11.5px;font-family:var(--mono);color:var(--text-3);font-weight:400}
+.tgroup>summary .tnote{margin-left:auto;font-size:12px;color:var(--text-3);font-weight:400}
+.tgroup .grid{padding:0 15px 15px}
+/* 待交付提示行（2026-10-01）：主题层缺口，不是卡片 */
+.pending{font-size:12.5px;color:var(--text-3);line-height:1.65;margin-top:10px;padding-left:2px}
+
+/* ④-c 时间线折叠（2026-10-01：默认只显示最近若干轮，旧的不删、点开即看） */
+.tl-more{font:inherit;font-size:12.5px;color:var(--brand);background:var(--brand-light);
+  border:1px solid var(--brand);border-radius:8px;padding:5px 12px;cursor:pointer;margin-bottom:14px}
+.tl-more:hover{border-color:var(--text-2);color:var(--text-2);background:var(--surface)}
+
+/* ⑤-b 「已经定下来」折叠（2026-10-01：低频查阅，默认收起） */
+.fold{margin-top:12px;border:1px solid var(--border-light);border-radius:11px;background:var(--bg)}
+.fold summary{cursor:pointer;padding:11px 15px;font-size:13px;font-weight:650;color:var(--text-2)}
+.fold summary::marker{color:var(--text-3)}
+.fold .todo-box{border:0;background:transparent;padding-top:2px}
+.fold .fold-body{padding:0 15px 14px}
+
+/* ⑥ 文件清单 */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border-light)}
+th{font-size:11.5px;color:var(--text-3);font-weight:600;letter-spacing:.04em}
+td:first-child{font-family:var(--mono);font-size:12.5px}
+td.num{font-family:var(--mono);font-size:12.5px;color:var(--text-3);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pill{font-size:11.5px;padding:1px 7px;border-radius:99px;background:var(--bg);border:1px solid var(--border-light);color:var(--text-2)}
+.pill.do{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.pill.ro{background:var(--brand-light);border-color:var(--brand);color:var(--brand)}
+@media (prefers-color-scheme:dark){ .pill.do{color:var(--green)} .pill.ro{color:var(--brand)} }
+
+/* ============ 看板化（2026-10-01 二次优化）：关键数字 + 页内导航 + 分节可折叠 ============
+   设计口径：一屏之内要能回答「现在在哪、还剩什么」；细节一律收进可折叠分节，
+   但每个折叠行都带一行摘要数字——收起来也不丢信息。 */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin:0 0 16px}
+.stat{background:var(--surface);border:1px solid var(--border-light);border-radius:12px;padding:12px 15px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.25;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--text-3);display:block;margin-top:2px}
+.stat.on b{color:var(--brand)}
+.stat.ok b{color:var(--green)}
+
+.anchors{position:sticky;top:0;z-index:5;display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;padding:9px 0;background:var(--bg)}
+.anchors a{font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--border-light);
+  border-radius:99px;padding:4px 12px;cursor:pointer}
+.anchors a:hover{border-color:var(--brand);color:var(--brand)}
+
+details.card{padding:0;overflow:hidden}
+details.card>summary{display:flex;align-items:baseline;gap:10px;padding:15px 22px;cursor:pointer;list-style:none}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary:before{content:"";flex:none;width:6px;height:6px;margin-right:2px;
+  border-right:1.6px solid var(--text-3);border-bottom:1.6px solid var(--text-3);
+  transform:rotate(-45deg) translate(1px,-1px)}
+details.card[open]>summary:before{transform:rotate(45deg)}
+details.card>summary:hover{background:var(--bg)}
+details.card>summary .sec{margin:0}
+details.card>summary .hint{margin-left:auto;text-align:right}
+details.card[open]>summary{border-bottom:1px solid var(--border-light)}
+.cbody{padding:16px 22px 20px}
+
+/* ⑦ 卡点 */
+.risk{display:flex;gap:9px;font-size:13.5px;color:var(--text-2);line-height:1.65;padding:7px 0;
+  border-bottom:1px solid var(--border-light)}
+.risk:last-child{border-bottom:0}
+.risk i{font-style:normal;color:var(--text-3);flex:none}
+
+footer{font-size:12.5px;color:var(--text-3);margin-top:26px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>项目进度 · 替换成你的项目名</h1>
+    <span class="upd" id="upd"></span>
+  </div>
+  <p class="lead">这一页只回答三个问题：<b>现在在哪</b>、<b>做过什么</b>、<b>接下来做什么</b>。产品本身在 <code>dist/&lt;产物名&gt;.html</code>，两者分开。</p>
+  <!-- 折叠判据：只折「条目多、而且会持续增长」的块（做过什么 / 文件清单 / 已交付词条的分组）。
+       条目本来就不多的（阶段路线、知识地图覆盖、卡点与待定）一律保持展开——别为了"整齐"到处加折。 -->
+  <nav class="anchors" id="anchors" aria-label="页内导航"></nav>
+
+  <div id="status"></div>
+  <div class="stats" id="stats"></div>
+
+  <section class="card" id="sec-topics"><div class="sec">知识地图覆盖<span class="hint" id="sumTopics"></span></div><div class="grid" id="topics"></div></section>
+  <section class="card" id="sec-stages"><div class="sec">阶段路线<span class="hint" id="sumStages"></span></div><div class="steps" id="stages"></div></section>
+  <section class="card" id="sec-batch"><div class="sec">所有词条<span class="hint" id="sumBatch"></span></div><div id="batch"></div></section>
+  <details class="card" id="sec-timeline"><summary><span class="sec">做过什么</span><span class="hint" id="sumTL"></span></summary><div class="cbody"><div id="tlTop"></div><div class="tl" id="timeline"></div></div></details>
+  <section class="card" id="sec-next"><div class="sec">接下来做什么<span class="hint" id="sumNext"></span></div><div id="next"></div></section>
+  <details class="card" id="sec-files"><summary><span class="sec">文件清单</span><span class="hint" id="sumFiles"></span></summary><div class="cbody" style="overflow-x:auto"><table id="files"></table></div></details>
+  <section class="card" id="sec-risks"><div class="sec">卡点与待定<span class="hint" id="sumRisks"></span></div><div id="risks"></div></section>
+
+  <footer>
+    <b>本页是给人看的</b>（双击即开，不需要装任何东西）。给 Agent 看的文字版建议另放进度文档与结论文档（例如 <code>ROADMAP.md</code> 管计划、<code>MEMORY.md</code> 沉淀结论，名字可自定）。<br>
+    维护方式：所有内容来自下方数据区，<b>改数据即全页重排，不手改 HTML</b>；本页与进度文档要同步更新。<br>
+    内容变多时的整理办法见数据区顶部注释：<b>分层 + 折叠，不靠删减</b>（旧条目只收起、不删除）。
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   数据区：每次交付后只改这里，下面的渲染代码不用动
+
+   state 取值：done（已完成） / doing（进行中） / todo（未开始）
+     · topics / stages 用三种状态；
+     · batch 是「已交付词条清单」，正常全是 done（统计磁贴按已交付口径显示）。
+   files 的 k 取值：ro（只读文档）/ do（由脚本生成的产物）
+
+   —— 页面「整理」规则（随内容变多照此做）——
+   ① 折谁不折谁看两条：条目多 + 还会持续变长。
+      可折：batch 按 batchGroups 分组、timeline 默认只显示最近 timelineRecent 条、files 整节。
+      一律展开：stages、topics、risks——别为「整齐」到处加折，那是负担不是整理。
+   ② 折叠 ≠ 删除：旧条目一条都不少，只是默认收起。真正的删减要先问使用者。
+   ③ 同一天的同类改动合并成一条；已定的决策进 next.decided。
+   ④ 旧条目太多时：先把结论蒸馏进结论文档，再问使用者删不删 DATA 里的旧条目——不自行删。
+
+   下面这份是示例数据，字段形状照抄即可，派生时整块替换。
+   ============================================================ */
+var DATA = {
+  updated: '2026-01-01 00:00',
+
+  /* ── 现在在哪（顶部三句）────────────────────────────
+     name：一句话现状；headline：本轮交付要点；aside：并行/补充事项。 */
+  stage: {
+    name: '示例阶段 · 一句话说明现在处在哪个阶段',
+    headline: '本轮交付：把这里换成最近一次交付的要点，可以写长一点。',
+    aside: '并行或补充事项写在这里，会显示在右侧；没有就留空字符串。'
+  },
+
+  /* ── 知识地图覆盖：每个主题一行，cnt = 该主题已交付的词条数 ── */
+  topics: [
+    {n:'示例主题甲', state:'done',  cnt:2, note:'2/2 收官（2026-01-01）：这批上线了哪些词条，一句话概括'},
+    {n:'示例主题乙', state:'doing', cnt:1, note:'进行中：已上线 1 条，剩余已列入计划'},
+    {n:'示例主题丙', state:'todo',  cnt:0, note:'未开工；选题已规划就位，点进去不空白但暂无实质词条'}
+  ],
+
+  /* ── 阶段路线 ── */
+  stages: [
+    {n:'阶段 0', name:'规划',     state:'done',  when:'01-01', desc:'立项 · 定数据契约 · 建骨架'},
+    {n:'阶段 1', name:'首期交付', state:'done',  when:'01-02 – 01-10', desc:'第一批词条上线，跑通「写卡 → 拼合 → 校验」'},
+    {n:'阶段 2', name:'横向铺开', state:'doing', when:'01-10 起 · 进行中', desc:'其余主题依次开工，每批交付后更新本页'},
+    {n:'阶段 3', name:'打磨发布', state:'todo',  when:'—', desc:'互链补全 · 溯源补全 · 对外分享'}
+  ],
+
+  batchHint: '',
+
+  /* ── 「所有词条」分组：to = 该组最后一条的序号（累计）── */
+  batchGroups: [
+    {n: '示例主题甲', to: 2, note: '一号专题，分 2 个分类'},
+    {n: '示例主题乙', to: 3, note: '第二批上线'}
+  ],
+
+  /* 主题入场卡数量：只用于对账口径（总条数 = batch 条数 + 入场卡数），不计入 batch */
+  navCardCount: 3,
+
+  /* 「做过什么」默认只显示最近几条，其余折叠 */
+  timelineRecent: 2,
+
+  /* ── 所有词条（已交付清单）：n 序号、cat 分类 id ── */
+  batch: [
+    {n:1, name:'示例词条一', cat:'c1', state:'done', note:'一句话说明这条卡片讲了什么、看点在哪'},
+    {n:2, name:'示例词条二', cat:'c1', state:'done', note:'一句话说明这条卡片讲了什么、看点在哪'},
+    {n:3, name:'示例词条三', cat:'c2', state:'done', note:'新上线的一条，写清它与前两条的关系'}
+  ],
+
+  /* ── 做过什么：t 时间段、h 小标题、d 描述、e 涉及的文件 ── */
+  timeline: [
+    {t:'01-01 – 01-02', h:'启动与规划', d:'定数据契约、建骨架、跑通第一条链路。', e:'CONTRACT.md · content/内容规范.md'},
+    {t:'01-02 – 01-10', h:'首批交付',   d:'写出前两条词条并合成单文件站点。', e:'content/知识库/ · dist/'},
+    {t:'01-10 起',      h:'横向铺开',   d:'按主题依次推进，每批交付后更新本页。', e:'content/词条清单.md'}
+  ],
+
+  /* ── 接下来做什么：decide 等使用者拍板；ready 已就绪/已完成；decided 已定的决策 ── */
+  next: {
+    decide: [
+      {own:'你', text:'下一步做哪个主题？不指定就按默认走。'}
+    ],
+    ready: [
+      {own:'我', text:'骨架已就位，拼合与校验链路已跑通。'}
+    ],
+    decided: [
+      {own:'你', text:'已定的决策写在这里；满一屏就靠折叠收起。'}
+    ]
+  },
+
+  /* ── 文件清单：p 路径、s 大小、t 改动时间、tag 一句话说明、k = ro 只读文档 / do 生成产物 ── */
+  files: [
+    {p:'README.md',        s:'3.2 KB', t:'00:00', tag:'对外门面（这是什么 / 怎么用）', k:'ro'},
+    {p:'CONTRACT.md',      s:'2.8 KB', t:'00:00', tag:'线间契约（内容线 ↔ 工程线接口冻结）', k:'ro'},
+    {p:'content/知识库/（N 张卡 · 按主题分目录）', s:'0 KB', t:'00:00', tag:'内容线·知识库', k:'do'},
+    {p:'dist/<产物名>.html', s:'0 KB', t:'00:00', tag:'站点唯一文件（由源生成，勿手改）', k:'do'}
+  ],
+
+  /* ── 卡点与待定：每条一个字符串 ── */
+  risks: [
+    '示例：某个主题仍只有导言、术语待铺开——点进去不会空白，但还没有实质词条。',
+    '示例：收录的及格线是 0 错误 · 0 警告；新卡最易踩的一条是「有 一句话 但没有 图解」。'
+  ]
+};
+
+/* ---------- 渲染（改数据无需动这里） ---------- */
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function countBy(arr, st){
+  var n = 0;
+  for (var i = 0; i < arr.length; i++){ if (arr[i].state === st) n++; }
+  return n;
+}
+
+function renderStatus(){
+  var doneStages = countBy(DATA.stages, 'done');
+  var totalStages = DATA.stages.length;
+  var doneBatch = countBy(DATA.batch, 'done');
+  var totalBatch = DATA.batch.length;
+  var pBatch = Math.round(doneBatch / totalBatch * 100);
+  var h = '<div class="card status">'
+    + '<div class="sec">当前状态</div>'
+    + '<div class="now">' + esc(DATA.stage.name) + '</div>'
+    + '<div class="line">' + esc(DATA.stage.headline) + '</div>'
+    + '<div class="aside">' + esc(DATA.stage.aside) + '</div>'
+    + '<div class="bar">'
+    +   '<div class="bar-top"><span>阶段总进度 · 已完成 ' + doneStages + ' / ' + totalStages + ' 个阶段</span><b>' + Math.round(doneStages / totalStages * 100) + '%</b></div>'
+    +   '<div class="track"><i class="g" style="width:' + Math.round(doneStages / totalStages * 100) + '%"></i></div>'
+    + '</div>'
+    + '<div class="bar">'
+    +   '<div class="bar-top"><span>技术词条交付 · 已交付 ' + doneBatch + ' / ' + totalBatch + ' 条</span><b>' + pBatch + '%</b></div>'
+    +   '<div class="track"><i style="width:' + pBatch + '%"></i></div>'
+    + '</div>'
+    + '</div>';
+  document.getElementById('status').innerHTML = h;
+}
+
+function renderStages(){
+  var h = '';
+  for (var i = 0; i < DATA.stages.length; i++){
+    var s = DATA.stages[i];
+    h += '<div class="step ' + s.state + '">'
+      + '<span class="dot"></span>'
+      + '<div class="n">' + esc(s.n) + (s.state === 'done' ? ' ✓' : s.state === 'doing' ? ' ●' : '') + '</div>'
+      + '<div class="nm">' + esc(s.name) + '</div>'
+      + '<div class="ds">' + esc(s.desc) + '</div>'
+      + '<div class="wh">' + esc(s.when) + '</div>'
+      + '</div>';
+  }
+  document.getElementById('stages').innerHTML = h;
+  document.getElementById('sumStages').textContent =
+    DATA.stages.length + ' 段 · 已完成 ' + countBy(DATA.stages, 'done') + '、进行中 ' + countBy(DATA.stages, 'doing');
+}
+
+/* 2026-10-01 改：词条按主题分组，**每组单独可折**（这是使用者要的「分类折叠」——
+   折的是"会越来越多"的那一类，不是把整页每块都折起来） */
+function renderBatch(){
+  var list = DATA.batch;
+  var gs = DATA.batchGroups || [];
+  var segs = [], from = 0;
+  for (var g = 0; g < gs.length; g++){
+    segs.push({ name: gs[g].n, note: gs[g].note || '', items: list.slice(from, gs[g].to) });
+    from = gs[g].to;
+  }
+  if (from < list.length) segs.push({ name: '', note: '', items: list.slice(from) });   /* 分段表没覆盖到的，兜底单列一段 */
+
+  var h = '';
+  for (var s = 0; s < segs.length; s++){
+    var seg = segs[s];
+    var done = 0;
+    for (var d = 0; d < seg.items.length; d++){ if (seg.items[d].state === 'done') done++; }
+    var cards = '';
+    for (var i = 0; i < seg.items.length; i++){
+      var b = seg.items[i];
+      cards += '<div class="cell ' + b.state + '">'
+        + '<div class="cn">#' + b.n + ' · ' + esc(b.cat) + '</div>'
+        + '<div class="cname">' + esc(b.name) + '</div>'
+        + '<div class="cnote">' + esc(b.note) + '</div>'
+        + '<div class="cflags">'
+        + (b.state === 'done' ? '<span class="tag ok">已交付</span>' : '<span class="tag">待撰写</span>')
+        + '</div></div>';
+    }
+    if (seg.name){
+      h += '<details class="tgroup"><summary>' + esc(seg.name)
+        + '<i>已交付 ' + done + ' / ' + seg.items.length + ' 条</i>'
+        + (seg.note ? '<span class="tnote">' + esc(seg.note) + '</span>' : '')
+        + '</summary><div class="grid">' + cards + '</div></details>';
+    } else {
+      h += '<div class="grid">' + cards + '</div>';
+    }
+  }
+
+  /* 「待交付」那一半（2026-10-01）：现在没有"已计划但未写"的卡片数据，所以这行只报**主题层**的缺口。
+     将来内容线先给出某主题的词条清单时，把卡片的 state 写成非 done，卡片会自动显示「待撰写」，
+     组行的分子分母（已交付 X / Y）随之变化——机制已经就位，只等数据。 */
+  var pend = [];
+  for (var t = 0; t < DATA.topics.length; t++){
+    if (DATA.topics[t].state !== 'done') pend.push(DATA.topics[t].n);
+  }
+  if (pend.length){
+    h += '<div class="pending">待交付：尚有 ' + pend.length + ' 个主题未铺开，条数未定 —— '
+      + esc(pend.join('、')) + '（状态见「知识地图覆盖」）</div>';
+  }
+
+  document.getElementById('batch').innerHTML = h;
+  /* 折叠行的摘要（2026-10-01 看板化）：收起来也不丢信息 */
+  var bDone = 0;
+  for (var k = 0; k < list.length; k++){ if (list[k].state === 'done') bDone++; }
+  document.getElementById('sumBatch').textContent =
+    '已交付 ' + bDone + ' 条 · 另有主题入场卡 ' + (DATA.navCardCount || 0) + ' 条（见「知识地图覆盖」）';
+}
+
+/* 2026-10-01 改：默认只显示最近 N 轮（DATA.timelineRecent），更早的收在按钮后面——
+   ⚠️ 只影响显示，旧条目一条没删；展开状态记在 tlAll 里，点一次就全展开 */
+var tlAll = false;
+function renderTimeline(){
+  var list = DATA.timeline;
+  var recent = DATA.timelineRecent || 5;
+  var older = Math.max(0, list.length - recent);
+  var start = tlAll ? 0 : older;
+
+  var top = '';
+  if (older > 0){
+    top = '<button type="button" class="tl-more" id="tlMore">'
+      + (tlAll ? '收起，只看最近 ' + recent + ' 轮' : '展开更早的 ' + older + ' 轮')
+      + '</button>';
+  }
+  document.getElementById('tlTop').innerHTML = top;
+  document.getElementById('sumTL').textContent =
+    '共 ' + list.length + ' 轮' + (older > 0 && !tlAll ? ' · 默认显示最近 ' + recent + ' 轮' : '');
+  var btn = document.getElementById('tlMore');
+  if (btn) btn.onclick = function(){ tlAll = !tlAll; renderTimeline(); };
+
+  var h = '';
+  for (var i = start; i < list.length; i++){
+    var t = list[i];
+    h += '<div class="tl-item">'
+      + '<div class="tl-t">' + esc(t.t) + '</div>'
+      + '<div class="tl-h">' + esc(t.h) + '</div>'
+      + '<div class="tl-d">' + esc(t.d) + '</div>'
+      + (t.e ? '<div class="tl-e">产出：' + esc(t.e) + '</div>' : '')
+      + '</div>';
+  }
+  document.getElementById('timeline').innerHTML = h;
+}
+
+/* 2026-10-01 改：可做的两栏并排，「已经定下来」的决策清单收进折叠（低频查阅、条数只增） */
+function renderNext(){
+  function box(cls, title, arr){
+    var li = '';
+    for (var i = 0; i < arr.length; i++){
+      li += '<li><span class="own">' + esc(arr[i].own) + '</span>' + esc(arr[i].text) + '</li>';
+    }
+    return '<div class="todo-box ' + cls + '">' + (title ? '<h3>' + esc(title) + '</h3>' : '') + '<ul>' + li + '</ul></div>';
+  }
+  document.getElementById('next').innerHTML =
+    '<div class="two">'
+      + box('waiting', '等你拍板 · 不点头就不动', DATA.next.decide)
+      + box('', '我可以直接做 · 已定的动作', DATA.next.ready)
+    + '</div>'
+    + '<details class="fold"><summary>已经定下来 · 不用再讨论（' + DATA.next.decided.length + ' 条，点开看）</summary>'
+      + box('done', '', DATA.next.decided)
+    + '</details>';
+  document.getElementById('sumNext').textContent =
+    '等你拍板 ' + DATA.next.decide.length + ' 件 · 可直接做 ' + DATA.next.ready.length + ' 件 · 已定 ' + DATA.next.decided.length + ' 件';
+}
+
+function renderFiles(){
+  var h = '<tr><th>路径</th><th>大小</th><th>改动</th><th>性质</th></tr>';
+  for (var i = 0; i < DATA.files.length; i++){
+    var f = DATA.files[i];
+    h += '<tr><td>' + esc(f.p) + '</td><td class="num">' + esc(f.s) + '</td>'
+      + '<td class="num">' + esc(f.t) + '</td>'
+      + '<td><span class="pill ' + f.k + '">' + esc(f.tag) + '</span></td></tr>';
+  }
+  document.getElementById('files').innerHTML = h;
+  /* 2026-10-01 看板化：文件清单整节可折叠，摘要走折叠行 */
+  document.getElementById('sumFiles').textContent = DATA.files.length + ' 个 · 全部在项目根目录，除注明外';
+}
+
+function renderRisks(){
+  var h = '';
+  for (var i = 0; i < DATA.risks.length; i++){
+    h += '<div class="risk"><i>' + (i + 1) + '.</i><span>' + esc(DATA.risks[i]) + '</span></div>';
+  }
+  document.getElementById('risks').innerHTML = h;
+  document.getElementById('sumRisks').textContent = DATA.risks.length + ' 条 · 都是记档，不阻塞任何事';
+}
+
+/* ---------- 2026-10-01 看板化：顶部关键数字 + 页内导航 ---------- */
+function renderStats(){
+  var tDone = countBy(DATA.topics, 'done');
+  var sDone = countBy(DATA.stages, 'done');
+  var upd = String(DATA.updated).slice(0, 10);          /* 只取日期 */
+  var tiles = [
+    { n: String(DATA.batch.length), t: '条技术词条 · 全部已交付', k: 'ok' },
+    { n: tDone + ' / ' + DATA.topics.length, t: '主题已有内容', k: 'on' },
+    { n: sDone + ' / ' + DATA.stages.length, t: '阶段已完成', k: '' },
+    { n: upd, t: '最近更新', k: '' }
+  ];
+  var h = '';
+  for (var i = 0; i < tiles.length; i++){
+    h += '<div class="stat ' + tiles[i].k + '"><b>' + esc(tiles[i].n) + '</b><span>' + esc(tiles[i].t) + '</span></div>';
+  }
+  document.getElementById('stats').innerHTML = h;
+}
+
+function renderAnchors(){
+  var secs = [
+    ['sec-topics', '知识地图'], ['sec-stages', '阶段'], ['sec-batch', '词条'],
+    ['sec-timeline', '做过什么'], ['sec-next', '接下来'], ['sec-files', '文件'], ['sec-risks', '卡点']
+  ];
+  var h = '', nav = document.getElementById('anchors');
+  for (var i = 0; i < secs.length; i++){
+    h += '<a href="#' + secs[i][0] + '" data-sec="' + secs[i][0] + '">' + esc(secs[i][1]) + '</a>';
+  }
+  nav.innerHTML = h;
+  nav.onclick = function(ev){
+    var a = ev.target.closest ? ev.target.closest('a[data-sec]') : null;
+    if (!a) return;
+    ev.preventDefault();
+    var sec = document.getElementById(a.getAttribute('data-sec'));
+    if (!sec) return;
+    if ('open' in sec) sec.open = true;                  /* 可折的节：先展开再滚过去 */
+    setTimeout(function(){ sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 0);
+  };
+}
+
+function renderTopics(){
+  var h = '';
+  for (var i = 0; i < DATA.topics.length; i++){
+    var t = DATA.topics[i];
+    var tag = t.state === 'doing' ? '<span class="tag ok">进行中</span>'
+            : t.state === 'done' ? '<span class="tag ok">已有内容</span>'
+            : '<span class="tag">待撰写</span>';
+    h += '<div class="cell ' + t.state + '">'
+      + '<div class="cn">' + t.cnt + ' 条词条</div>'
+      + '<div class="cname">' + esc(t.n) + '</div>'
+      + '<div class="cnote">' + esc(t.note) + '</div>'
+      + '<div class="cflags">' + tag + '</div>'
+      + '</div>';
+  }
+  document.getElementById('topics').innerHTML = h;
+  var tDone = 0;
+  for (var k = 0; k < DATA.topics.length; k++){ if (DATA.topics[k].state === 'done') tDone++; }
+  document.getElementById('sumTopics').textContent =
+    DATA.topics.length + ' 个主题 · ' + tDone + ' 个已有内容、' + (DATA.topics.length - tDone) + ' 个待写';
+}
+
+document.getElementById('upd').textContent = '最后更新 ' + DATA.updated;
+renderStatus(); renderStats(); renderAnchors();
+renderTopics(); renderStages(); renderBatch(); renderTimeline();
+renderNext(); renderFiles(); renderRisks();
+</script>
+</body>
+</html>

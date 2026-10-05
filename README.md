@@ -53,7 +53,6 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 │   ├── 词条图鉴模板-v5.html     单文件引擎母版（含 PYI 拼音表）
 │   └── 项目进度模板-v1.html     进度看板模板（只改数据区，零外部请求）
 ├── docs/派生与排错.md           接线点行号、常见红字、源项目痕迹对照（README 配图在 docs/img/）
-└── .github/workflows/smoke.yml CI 冒烟测试：推送即验证「空骨架 → 起步 → 校验通过」
 ```
 
 ## 怎么用它派生

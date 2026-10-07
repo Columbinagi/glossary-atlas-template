@@ -175,7 +175,7 @@ html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c6
   transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
 .nav-search:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
 .nav-search svg{flex:none;color:var(--text-3)}
-.nav-search input{flex:1;min-width:0;border:0;outline:0;font-size:13.5px;color:var(--text);background:transparent}
+.nav-search input{flex:1;min-width:0;border:0;outline:0;font-size:13.5px;color:var(--text);background:transparent;text-overflow:ellipsis}   /* v1.1.3：窄屏占位不再被硬裁半个字（原来是 clip） */
 .nav-search input::placeholder{color:var(--text-3)}
 .search-clear{flex:none;display:none;width:18px;height:18px;padding:0;border:0;border-radius:50%;
   background:var(--bg-hover);color:var(--text-3);font-size:12px;font-family:inherit;
@@ -190,6 +190,7 @@ html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c6
   display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);
   transition:border-color .15s,color .15s}
 .kbd-btn:hover{color:var(--brand);border-color:var(--brand)}
+.kbd-ic{font-style:normal;display:inline-block;text-align:center}   /* v1.1.3：抽屉里给 ? 一个与色点同宽的图标位，两行标签才对得齐 */
 .kbd-mask{position:fixed;inset:0;z-index:90;background:var(--mask);
   display:flex;align-items:flex-start;justify-content:center;padding:12vh 20px 20px}
 .kbd-mask[hidden]{display:none}
@@ -1350,6 +1351,7 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .drawer-tools .nav-color{position:relative;display:flex;align-items:center;justify-content:flex-start;gap:10px;
     height:44px;padding:0 12px;border-radius:9px}   /* v1.1.3：抽屉里是「圆点 + 主题色」一行，须左对齐，抵消顶栏那条居中 */
   .drawer-tools .nav-circle{width:30px;height:30px}
+  .drawer-tools .kbd-ic{width:30px}   /* v1.1.3：与 .drawer-tools .nav-circle 同宽，两行标签左边界对齐 */
   .drawer-tools .kbd-btn{width:100%;height:44px;padding:0 12px;justify-content:flex-start;gap:10px;
     border:0;background:transparent;font-family:inherit;font-size:14px;border-radius:9px}
   .drawer-tools .kbd-btn:hover{background:var(--bg-hover);color:var(--text)}
@@ -1460,7 +1462,7 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
     <div class="color-pop" id="colorPop" role="menu" aria-label="主题色" hidden></div>
   </div>
   <!-- v5（2026-09-27）：快捷键帮助入口（? 呼出；可见入口，避免「有功能无入口」） -->
-  <button type="button" class="kbd-btn" id="kbdBtn" aria-haspopup="dialog" aria-expanded="false" title="键盘快捷键（?）">?<span class="dt-label" id="kbdLabel"></span></button>
+  <button type="button" class="kbd-btn" id="kbdBtn" aria-haspopup="dialog" aria-expanded="false" title="键盘快捷键（?）"><i class="kbd-ic" aria-hidden="true">?</i><span class="dt-label" id="kbdLabel"></span></button>
   <button class="theme-btn" id="themeBtn" aria-label="颜色模式：跟随系统" title="颜色模式：跟随系统"></button>
 </header>
 
@@ -1887,7 +1889,270 @@ var KB_TERMS = [
    目的是「直接双击母版，也能把『更新』视图和英文模式点开看」。
    构建时它们会被 content/更新日志*.md 与 content/知识库-en/ 的内容替换。
    ------------------------------------------------------------ */
-var KB_TERMS_EN = null;      // 英文分册（构建时来自 content/知识库-en/，缺则 null，界面自动回退中文）
+/* ================== KB_TERMS_EN — English edition (sample data) ==================
+   Mirrors KB_TERMS field by field: same ids, order, key sets, array lengths, HTML structure.
+   name carries the [Sample] prefix; since name is already English, nameEn stays empty.
+   In the graphic fields only the visible text between tags is translated — every tag,
+   class and attribute is kept byte-for-byte. Numbers (answers, states, steps, idx) are untouched. */
+var KB_TERMS_EN = [
+
+  /* ---------- Flagship sample: every module in one card ---------- */
+  {
+    id: 'doc-online', cat: 'c1',
+    name: '[Sample] Online Doc', nameEn: '',
+    scenario: 'Let’s all work on this plan together instead of passing version 8 around as an attachment.',
+    definition: 'An online doc is a web page stored in the cloud that several people edit at the same time through one shared link, with every change saved automatically.',
+    defNote: '·Instead of passing files back and forth, let everyone open the same link: [[doc-history|version history]] records who changed what and when, so older content can always be brought back.',
+    prereqs: [{name: '[Sample] Signing in', id: null}],
+    aliases: ['Cloud doc', 'Collaborative doc'],
+    demo: '<div class="dk-story">'
+      + '<div class="dk-card"><b>Plan.doc</b><small>Edits by several people at once</small><div class="dk-dots"><i class="on"></i><i class="on"></i><i></i></div></div>'
+      + '<div class="dk-move"><span>Auto-save</span><i>→</i></div>'
+      + '<div class="dk-card"><b>Version store</b><small>Every change kept</small><div class="dk-dots"><i class="on"></i><i class="on"></i><i class="new"></i></div></div>'
+      + '<div class="dk-move"><span>Create link</span><i>→</i></div>'
+      + '<div class="dk-card"><b>Team</b><small>Opens from the same link</small><div class="dk-avas"><i></i><i></i><i></i></div></div>'
+      + '</div>',
+    demoAnswer: 'There is only one file, changes sync in real time, and older versions can always be recovered. That is what sets it apart from an attachment.',
+    sections: [
+      {h: 'How to create one', paras: [
+        '[Sample] Create it from the workspace under “New → Document”, choosing either a blank file or the meeting minutes template.',
+        '[Sample] The title becomes the headline of the share card, so name the topic clearly instead of leaving the default “New document”.'
+      ]},
+      {h: 'How to share it', paras: [
+        '[Sample] The “Share” button at the top right grants one of three levels: can view, can comment, or can edit. By default only your team can open it.'
+      ]}
+    ],
+    usage: {
+      do: [
+        {text: 'Several people move the same document forward, with no stray copies left behind',
+         mock: '<div class="mk"><div class="mk-row between"><div class="mk-row"><span class="mk-tag green">Online</span><b>Plan.doc</b></div><span class="mk-row"><i class="mk-dot"></i>3 people editing</span></div><span class="mk-line" style="width:72%"></span><span class="mk-line" style="width:48%"></span></div>'},
+        {text: 'When a review needs a paper trail, comments @ the right person',
+         mock: '<div class="dk-chat"><div class="c-row"><span class="c-ava">Li</span><span class="c-bubble">Can we change the budget figure in section 3? @Wang</span></div><div class="c-row me"><span class="c-ava">Me</span><span class="c-bubble">Already updated, see the latest version</span></div><div class="c-input">Write a comment…</div></div>'}
+      ],
+      dont: [
+        {text: 'Storing confidential data: however strict the cloud permissions are, it can still leak',
+         mock: '<div class="mk bad"><div class="mk-alert">⚠ This document contains sensitive information; do not upload it to the cloud</div></div>'},
+        {text: 'Using it as your only backup: if the gateway fails, nobody can open it',
+         mock: '<div class="mk bad"><div class="mk-row"><span class="mk-tag red">Offline</span><span>Cannot reach the server, retrying…</span></div><div class="mk-row"><span class="mk-spinner"></span><span>Reconnecting (attempt 3)</span></div></div>'}
+      ]
+    },
+    anatomy: {
+      stage: '<div class="dk-flow" style="max-width:560px">'
+        + '<div class="dk-stage" data-ap="1"><b>Editor</b><small>where you type on the page</small></div>'
+        + '<div class="dk-arr" data-ap="2">→<code>saves when you pause</code></div>'
+        + '<div class="dk-stage" data-ap="3"><b>Version store</b><small>every version kept</small></div>'
+        + '<div class="dk-arr" data-ap="4">→<code>grant access</code></div>'
+        + '<div class="dk-stage" data-ap="4"><b>Share link</b><small>permissions travel with the link</small></div>'
+        + '</div>',
+      parts: [
+        {idx: 1, pn: 'Editor', pe: '', pd: 'Write straight in the browser, no software to install'},
+        {idx: 2, pn: 'Auto-save', pe: '', pd: 'Pause for a few seconds and a version is saved for you'},
+        {idx: 3, pn: 'Version store', pe: '', pd: 'Every saved point can be previewed and rolled back'},
+        {idx: 4, pn: 'Share link', pe: '', pd: 'One link, three levels of permission'}
+      ]
+    },
+    variants: [
+      {name: 'View-only link', nameEn: '',
+       desc: 'People can read the content but cannot comment or change it. Best for announcements to a wide audience.',
+       mock: '<div class="mk"><div class="mk-row between"><div class="mk-row"><span class="mk-tag blue">Can view</span><b>Plan.doc</b></div><span class="mk-tag gray">Read-only</span></div><span class="mk-line" style="width:72%"></span><span class="mk-line" style="width:48%"></span></div>'},
+      {name: 'Comment-only link', nameEn: '',
+       desc: 'People can annotate and @ each other, but the body text stays locked. Best for collecting review feedback.',
+       mock: '<div class="mk"><div class="mk-row between"><div class="mk-row"><span class="mk-tag orange">Can comment</span><b>Plan.doc</b></div><span class="mk-tag gray">12 comments</span></div><div class="mk-row"><span class="mk-line" style="flex:1"></span><span class="mk-btn text">Reply</span></div></div>'},
+      {name: 'Editing link', nameEn: '',
+       desc: 'Edits go straight into the body text and sync to everyone in real time. Best for writing together.',
+       mock: '<div class="mk"><div class="mk-row between"><div class="mk-row"><span class="mk-tag green">Can edit</span><b>Plan.doc</b></div><span class="mk-row"><i class="mk-dot"></i>3 people editing</span></div><span class="mk-line" style="width:64%"></span></div>'}
+    ],
+    scenes: [
+      {cap: 'Creating one from the workspace', shot: '<div class="mk-win" style="max-width:300px"><div class="mk-row between"><b style="font-size:12px">New</b><span class="mk-tag blue">Template</span></div><div class="mk-row"><span class="mk-btn primary">Blank document</span><span class="mk-btn outline">Meeting minutes</span></div><div class="mk-row"><span class="mk-btn text">Browse the template gallery →</span></div></div>'},
+      {cap: 'Comments and @ mentions', shot: '<div class="dk-chat" style="max-width:300px"><div class="c-row"><span class="c-ava">Li</span><span class="c-bubble">Maybe reword this to “expected”</span></div><div class="c-row me"><span class="c-ava">Me</span><span class="c-bubble">Got it, changed</span></div><div class="c-input">Reply…</div></div>'},
+      {cap: 'Share permission settings', shot: '<div class="mk-scene" style="width:280px"><div class="mk-skel"><b style="font-size:12px">Share settings</b><div class="mk-row between"><span>Can edit</span><span class="mk-tag green">Selected</span></div><div class="mk-row between"><span>Can comment</span><span class="mk-tag gray">Available</span></div></div><div class="mk-modal small"><span class="m-title">Link copied</span><div class="m-actions"><span class="mk-btn outline">Cancel</span><span class="mk-btn primary">OK</span></div></div></div>'}
+    ],
+    confusions: [
+      {name: '[Sample] Local file', say: 'Stored on your own computer, so changes never sync and no versions are kept; you tell copies apart by filename.'},
+      {name: '[Sample] Email attachment', say: 'Every send adds another copy, leaving you to remember which one you edited and which is the newest.'}
+    ],
+    quiz: {
+      q: '[Sample] What is the most fundamental difference between an online doc and emailing an attachment?',
+      options: ['Keeping the file on your own computer is safer', 'Everyone edits the same copy, and versions are kept automatically', 'It can only be opened with a dedicated desktop app'],
+      answer: 1,
+      explain: 'It comes down to one link, real-time collaboration, and automatic versions: there is only one file, so versions never scatter.'
+    },
+    aiPrompt: '[Sample] Turn these meeting notes into an online doc: split it into three sections for decisions, action items, and owners, and make the action items a table with due dates.',
+    next: [
+      {id: 'doc-history', note: 'How to bring back content that was overwritten'},
+      {id: 'meeting-note', note: 'A minutes template you can use as is'}
+    ],
+    refs: [{name: '[Sample] Internal collaboration guidelines (placeholder, replace on integration)', url: ''}]
+  },
+
+  /* ---------- Mid-weight sample: diff blocks + usage ---------- */
+  {
+    id: 'doc-history', cat: 'c1',
+    name: '[Sample] Version History', nameEn: '',
+    scenario: 'That paragraph just got overwritten. Can we go back to the version from an hour ago?',
+    definition: 'Version history is the timeline of changes that the system saves automatically, where every point can be previewed and restored in one click.',
+    defNote: '·No need to “save as” a new copy by hand: in an [[doc-online|online doc]] every step leaves a record. Restoring an old version does not delete the newer one, it saves yet another version.',
+    aliases: ['Revision log', 'Previous versions'],
+    demoCtl: {
+      states: 3, init: 1,
+      acts: [
+        {label: '← Previous version', step: -1},
+        {label: 'Next version →', step: 1},
+        {label: 'Back to latest', to: 2}
+      ]
+    },
+    demo: '<div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px">'
+      + '<div class="dk-story">'
+      + '<div class="dk-card" data-at-min="0"><b>v13</b><small>Saved 09:15</small><span class="mk-tag blue" data-at="0">Current</span></div>'
+      + '<div class="dk-move" data-at-min="1"><span>Auto-save</span><i>→</i></div>'
+      + '<div class="dk-card" data-at-min="1"><b>v14</b><small>Saved 10:42</small><span class="mk-tag blue" data-at="1">Current</span></div>'
+      + '<div class="dk-move" data-at-min="2"><span>Auto-save</span><i>→</i></div>'
+      + '<div class="dk-card" data-at-min="2"><b>v15</b><small>Saved 11:20</small><span class="mk-tag blue" data-at="2">Current</span></div>'
+      + '</div>'
+      + '<div class="dk-status" data-at="0">Now at v13, the earliest version in the history</div>'
+      + '<div class="dk-status" data-at="1">Now at v14. Click “Previous version” to compare with earlier content</div>'
+      + '<div class="dk-status" data-at="2">Now at v15, the latest version. Restoring an older one adds another entry to the history</div>'
+      + '</div>',
+    demoAnswer: 'Restoring means saving the old content as a new version, so nothing is lost from the history.',
+    demoNote: 'Illustrative data: the version numbers and save times are placeholders.',
+    sections: [
+      {h: 'How to use it', paras: [
+        '[Sample] Open the timeline from “⋯ → Version history” at the top right, click any point to compare the differences on the right, then confirm with “Restore this version”.'
+      ]}
+    ],
+    usage: {
+      do: [
+        {text: 'When a change went wrong, compare the differences before restoring',
+         mock: '<div class="mk"><div class="mk-row between"><b style="font-size:12px">v13 ⇄ v14</b><span class="mk-tag green">Compared</span></div><div class="mk-row"><span class="mk-btn primary">Restore v13</span><span class="mk-btn outline">Keep v14</span></div></div>'}
+      ],
+      dont: [
+        {text: 'Treating version history as a recycle bin and filling it with dead drafts',
+         mock: '<div class="mk bad"><div class="mk-row"><span class="mk-tag red">Scrapped.doc</span><span class="mk-tag red">Draft-old.doc</span><span class="mk-tag red">Final-v2.doc</span></div></div>'}
+      ]
+    },
+    quiz: {
+      q: '[Sample] After you restore an old version, what happens to the newer one?',
+      options: ['It is deleted, leaving only the old version', 'It stays in the history, and the restore itself becomes a new version', 'The two are merged into one version automatically'],
+      answer: 1,
+      explain: 'Restoring copies the old content into a new version, so the history only grows.'
+    },
+    aiPrompt: '[Sample] Turn this document’s version history into a change summary table: one row per entry with time, editor, and what changed, newest first.',
+    next: ['doc-online'],
+    refs: [{name: '[Sample] Version control tips (placeholder)', url: ''}]
+  },
+
+  /* ---------- Light sample: mk-win template mock ---------- */
+  {
+    id: 'meeting-note', cat: 'c2',
+    name: '[Sample] Meeting Minutes', nameEn: '',
+    scenario: 'The meeting is over. Who took the minutes? Send me a copy.',
+    definition: 'Meeting minutes are a short document that pins down three things on the spot: decisions, action items, and owners.',
+    defNote: '·Good minutes fit on one screen: who does what, by when. The discussion itself gets one sentence.',
+    aliases: ['Meeting notes'],
+    demo: '<div class="dk-window" style="max-width:340px"><div class="w-bar"><span class="w-dot"></span>Meeting minutes template</div><div class="w-body">'
+      + '<div class="mk-row"><span class="mk-tag blue">Decisions</span><span class="mk-line" style="flex:1"></span></div>'
+      + '<div class="mk-row"><span class="mk-tag orange">Action items</span><span class="mk-line" style="flex:1;width:60%"></span></div>'
+      + '<div class="mk-row between"><span class="mk-row"><span class="mk-tag green">Owner</span><span class="mk-tag gray">Due</span></span><span class="mk-btn primary">Send</span></div>'
+      + '</div></div>',
+    demoAnswer: 'The value of minutes is settling things on the spot: with decisions, action items, and owners all in place, the meeting is truly over.',
+    sections: [
+      {h: 'How to write them', paras: [
+        '[Sample] Follow the three-part template: decisions (one sentence each), action items (start with a verb), owners (a named person and a date).'
+      ]}
+    ],
+    aiPrompt: '[Sample] Using the decisions / action items / owners structure, turn this meeting transcript into minutes, and give every action item an owner.',
+    next: ['doc-online']
+  },
+
+  /* ---------- Flat topic sample (t2, no category) ---------- */
+  {
+    id: 'git-commit', cat: null, topic: 't2',
+    name: '[Sample] Commit', nameEn: '',
+    scenario: 'Done with this change. Let me save a checkpoint before I carry on.',
+    definition: 'A commit bundles the current changes into a checkpoint with a message, and you can return to it at any time.',
+    defNote: '·Think of it as taking a snapshot of the whole project. The message says what you did, not which lines you touched.',
+    demo: '<div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px">'
+      + '<div class="dk-terminal"><div class="t-bar"><i></i><i></i><i></i><span>Terminal</span></div><div class="t-body">'
+      + '<div><span class="t-p">$</span> <span class="t-c">git commit -m "Fix login redirect"</span></div>'
+      + '<div class="t-g">✓ 1 file changed, checkpoint created</div>'
+      + '</div></div>'
+      + '<div class="dk-commit"><span class="ava"></span><span class="msg">Fix login redirect</span><span class="meta">Wang · 3 minutes ago</span><span class="hash">a1b2c3d</span></div>'
+      + '</div>',
+    demoAnswer: 'A commit is a snapshot of the whole project with a message attached. Only when you can return to any checkpoint do you dare keep changing things.',
+    variants: [
+      {name: 'git add', nameEn: '',
+       desc: 'Pick out the changes to save this time and put them in the staging area.',
+       mock: '<div class="dk-terminal"><div class="t-body"><div><span class="t-p">$</span> <span class="t-c">git add app.js</span></div><div class="t-g">✓ Added to the staging area</div></div></div>'},
+      {name: 'git commit', nameEn: '',
+       desc: 'Bundle the staged changes into a checkpoint with a message.',
+       mock: '<div class="dk-terminal"><div class="t-body"><div><span class="t-p">$</span> <span class="t-c">git commit -m "Fix login redirect"</span></div><div class="t-g">✓ Checkpoint created</div></div></div>'},
+      {name: 'git log', nameEn: '',
+       desc: 'Browse the project’s checkpoints, newest first.',
+       mock: '<div class="dk-terminal"><div class="t-body"><div class="t-a">a1b2c3d Fix login redirect</div><div class="t-d">f4e5d6c Add payments module</div></div></div>'},
+      {name: 'git status', nameEn: '',
+       desc: 'See which files have changed and are not saved yet.',
+       mock: '<div class="dk-terminal"><div class="t-body"><div><span class="t-p">$</span> <span class="t-c">git status</span></div><div class="t-r">M app.js</div><div class="t-d">?? notes.tmp</div></div></div>'}
+    ],
+    usage: {
+      do: [
+        {text: 'Commit after every small step, and say in the message what you did',
+         mock: '<div class="dk-terminal" style="max-width:320px"><div class="t-body"><div><span class="t-p">$</span> <span class="t-c">git commit -m "Fix login redirect"</span></div><div class="t-g">✓ Saved</div></div></div>'}
+      ],
+      dont: [
+        {text: 'Saving up a week of changes and committing them in one go, so the message can only say “misc”',
+         mock: '<div class="mk bad"><div class="mk-row"><span class="mk-tag red">Day 7</span><span>38 files lumped together</span></div><span class="mk-line" style="width:90%"></span><span class="mk-line" style="width:76%"></span><span class="mk-line" style="width:58%"></span></div>'}
+      ]
+    },
+    sections: [
+      {h: 'How it differs from “save”', paras: [
+        '[Sample] Saving writes to the current file only. A commit snapshots the whole project, and other people can see that checkpoint too.'
+      ]}
+    ],
+    quiz: {
+      q: '[Sample] What is the best way to write a commit message?',
+      options: ['Which lines of code you changed', 'What you did and why', 'It does not matter, leaving it blank is fine'],
+      answer: 1,
+      explain: 'The message is for your future self and your teammates, so write the intent, not line numbers.'
+    },
+    aiPrompt: '[Sample] Turn these 5 changes into commit messages: one line each, start with a verb, no more than 20 characters per line.',
+    next: ['git-branch'],
+    refs: [{name: '[Sample] Team commit conventions (placeholder)', url: ''}]
+  },
+
+  {
+    id: 'git-branch', cat: null, topic: 't2',
+    name: '[Sample] Branch', nameEn: '',
+    scenario: 'This change feels risky. I want to try it on the side without touching main.',
+    definition: 'A branch is a parallel line of development split off from main: you experiment without touching main, then merge it back once it works.',
+    defNote: '·Like drafting on scratch paper before writing it out clean: scribble freely on the draft and the final copy stays clean.',
+    demo: '<div class="dk-graph" style="max-width:360px">'
+      + '<div class="dk-lane"><span class="dk-gtag">Main</span><i class="dk-dot"></i><span class="dk-glink"></span><i class="dk-dot"></i><span class="dk-glink"></span><i class="dk-dot"></i><span class="dk-glink"></span><i class="dk-dot merge"></i><span class="dk-gnote">stable</span></div>'
+      + '<div class="dk-lane"><span class="dk-gtag green">Experiment</span><i class="dk-dot green"></i><span class="dk-glink"></span><i class="dk-dot green"></i><span class="dk-gnote">Change anything, main stays untouched</span></div>'
+      + '</div>',
+    demoAnswer: 'Branches keep experimenting and staying stable out of each other’s way: tinker freely on the experiment line while main stays shippable.',
+    sections: [
+      {h: 'When to open a branch', paras: [
+        '[Sample] Branch when the change is large, you are unsure about it, or it will hold files for a long time. For small changes, finish them on main and commit.'
+      ]}
+    ],
+    next: ['git-commit'],
+    refs: [{name: '[Sample] Branch naming conventions (placeholder)', url: ''}]
+  },
+
+  {
+    id: 'git-ignore', cat: null, topic: 't2',
+    name: '[Sample] Ignore List', nameEn: '',
+    scenario: 'Keep these temporary files out of version control.',
+    definition: 'An ignore list declares which files never enter version control. Temporary files and secrets belong on it.',
+    demo: '<div class="dk-terminal" style="max-width:360px"><div class="t-bar"><i></i><i></i><i></i><span>.gitignore</span></div><div class="t-body">'
+      + '<div class="t-d"># Temporary files</div>'
+      + '<div class="t-c">*.tmp</div>'
+      + '<div class="t-d"># Local config (different for everyone)</div>'
+      + '<div class="t-c">config.local</div>'
+      + '</div></div>',
+    demoAnswer: 'Blocking what should not enter the repository up front is far easier than scrubbing it out of history later.'
+  }
+];   // v1.1.3：母版自带一套示例英文分册（与 KB_TERMS 同 id 配对）；构建时仍由 content/知识库-en/ 整体替换
 var CHANGELOG_EN = null;     // 英文更新日志（构建时来自 content/更新日志-en.md，缺则 null）
 var CHANGELOG = [            // 更新日志（构建时来自 content/更新日志.md）
   {date: '2026-01-01', version: 'v0.1.0', title: '示例：母版自带的占位条目', items: [
@@ -1939,6 +2204,8 @@ var I18N_EN = {
   exitFavView: 'Exit favorites', favViewLabel: 'Saved terms ({n})', favWord: 'Saved',
   favEmpty: 'Nothing saved yet — tap the star at the top-right of any card.',
   termsUnit: '{n} terms', itemsUnit: '{n} items', resultsUnit: '{n} results',
+  /* v1.1.3：单数形式——ts() 见到 vars.n === 1 会自动改查 key + 'One'，避免英文界面出现「1 terms」 */
+  termsUnitOne: '{n} term', itemsUnitOne: '{n} item', resultsUnitOne: '{n} result',
   foundUnit: 'Found {n} results', acrossTopics: 'Across all topics',
   searchH1: 'Search “{q}”', noMatch: 'No terms match “{q}”. Try a different keyword.',
   /* v5（2026-09-27）：B1 继续上次 + B3 快捷键帮助 */
@@ -1995,6 +2262,8 @@ var VIEW_TITLE_EN = {
 
 /* 散装界面文案：en 查 I18N_EN（{n}/{q} 占位替换）；zh 返回调用处给的中文原文 */
 function ts(key, zh, vars){
+  /* v1.1.3：英文单复数——带 {n} 的计数文案，n === 1 且表里有 key + 'One' 就改查它（中文侧不受影响） */
+  if (vars && vars.n === 1 && I18N_EN[key + 'One'] != null) key = key + 'One';
   if (state.lang === 'en' && I18N_EN[key] != null){
     var s = I18N_EN[key];
     if (vars){
@@ -2907,10 +3176,12 @@ function renderTopicView(){
     shown = visible.length;
     /* v5（2026-09-27 体验批次·件 6A）：Apple Large Title 双元素——大标题随流滚走，
        .lt-small（#topicView 直接子元素，sticky 钉顶）按滚动进度淡入接位（syncLtFade） */
-    var ltSub = (state.lang === 'en') ? ts('termsUnit', shown + ' 个词条', { n: shown })
-      : (topic.nameEn || ts('termsUnit', shown + ' 个词条', { n: shown }));
+    /* v1.1.3 修复：大标题副题只承担「另一种语言的标题」，不再回退成词条数——
+       回退成词条数会让「3 个词条」在标题右侧与副题各出现一次（英文界面 100% 复现；
+       中文界面在主题没写 nameEn 时也复现）。没有副题就不渲染 <small>，计数交给右侧 .cnt。 */
+    var ltSub = (state.lang !== 'en' && topic.nameEn) ? topic.nameEn : '';
     html += '<div class="topic-heading"><div class="lt-big-h"><h1>' + esc(topicHeading(topic)) + '</h1>' +
-      '<small>' + esc(ltSub) + '</small></div>' +
+      (ltSub ? '<small>' + esc(ltSub) + '</small>' : '') + '</div>' +
       '<span class="cnt">' + ts('termsUnit', shown + ' 个词条', { n: shown }) + '</span></div>' +
       '<div class="lt-small" aria-hidden="true"><h1>' + esc(topicHeading(topic)) + '</h1></div>';
 

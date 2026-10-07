@@ -560,8 +560,8 @@ html.has-cursor-fx .cursor-fx{will-change:transform}
    英文 17px/500/品牌蓝 var(--brand)（明暗八色自动跟随）/左距 6px；英文颜色首轮曾被静态
    分析误判为灰色，经 computed 实测纠正——CSS 级联以实测为准（教训记 MEMORY §32-16）。
    ≤720px 为参考站同款标题断点（仅缩英文 16px；中文由 clamp 自动缩），非站内布局断点 */
-h3.card-title{font-size:clamp(18px,5vw,22px);font-weight:600;letter-spacing:-.01em;color:var(--text);line-height:1.7}
-h3.card-title span{display:inline-block;font-size:17px;font-weight:500;color:var(--brand);margin-left:6px}   /* v1.1.3：inline-block 让英文名整体换行，不再被拆成「Online / Doc」两行 */
+h3.card-title{font-size:clamp(17px,4.4vw,18px);font-weight:600;letter-spacing:-.01em;color:var(--text);line-height:1.7}   /* v1.1.3：22px → 18px，理顺「页题 28 > 区块题 17 > 卡片题 18」的阶梯（原来卡片题比区块题还大） */
+h3.card-title span{display:inline-block;font-size:14px;font-weight:500;color:var(--brand);margin-left:6px}   /* v1.1.3：inline-block 让英文名整体换行；字号 17 → 14，不抢主名 */
 @media (max-width:720px){
   h3.card-title span{font-size:16px}
 }
@@ -593,6 +593,12 @@ h3.card-title span{display:inline-block;font-size:17px;font-weight:500;color:var
    降档后画布 232px，最窄的 320 档（卡片 288 → 内容宽 246）也放得下。
    实测命中档位：320 / 360 / 375 / 961 / 1281（正是原先被裁的五档）；390 起与 1024 / 1180 / 1440 保持原尺寸。 */
 @container termcard (max-width:302px){ .card-demo{--pv-s:.58} }
+/* v1.1.3：卡片位示意图的可读性。缩略图整体缩放 0.58–0.75，图内 10–12px 的小字落到 6–9px，
+   等于白写——所以卡片位**只留主干**：次要小字（<small>）不显示，主标签加大一号，
+   缩放后约 9–13px，能看清「哪几个块、什么顺序」。详情页的同一张图不受影响（选择器限定在 .card-demo）。 */
+.card-demo small{display:none}
+.card-demo .dk-stage b,.card-demo .dk-col>b,.card-demo .dk-card b{font-size:16px}
+.card-demo .dk-arr code{font-size:14px}
 .dk-canvas{position:absolute;left:50%;top:50%;width:var(--pv-w);height:var(--pv-h);
   transform:translate(-50%,-50%) scale(var(--pv-s));transform-origin:center;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
@@ -1401,39 +1407,58 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .card-grid{grid-template-columns:1fr}
   .dh-demo{padding:14px}
   /* ============================================================
-     v5（2026-10-01 手机端顶栏重排·两行）
-     依据：参考站手机端顶栏本来就是两行——它的 nav 在 ≤560 走 grid、高 108px
-     （行 1 = 纯 logo + 搜索 + 语言/工具，行 2 = 整排导航链接跨两列），桌面与平板仍是单行 60px。
-     本站 ≤560 的排布：
-       行 1 = ☰ 目录 · 品牌（仅图标）· 搜索框（占满剩余）· 明暗    ← 就地操作 + 一号动作
-       行 2 = 词条 · 自测 · 更新 …… 收藏 · 语言                    ← 要去的去处
-     主题色与快捷键帮助仍在抽屉里（见 ≤960 段），避免顶栏再挤。
-     顺带修掉两个旧缺口：① .nav-links 在 ≤960 是 display:none，「自测 / 更新」在手机上
-     原本根本没有入口；② ≤960 的 44px 规则把 .lang-btn 压成 44px 宽，「中文」被挤成两行。
+     v5（2026-10-01 手机端顶栏重排·两行）→ v1.1.3 改为「单行顶栏 + 底部 tab」
+     原方案是两行顶栏（行 1 = ☰/品牌/搜索/明暗，行 2 = 导航 + 收藏 + 语言），实测 110px，
+     在 667px 视口上占 17%。v1.1.3 的取舍：
+       顶栏一行 60px = ☰ · 品牌 · 搜索（占满剩余）· 明暗        ← 就地操作 + 一号动作
+       底部固定 tab  = 词条 · 自测 · 更新 · 收藏                  ← 「要去的去处」放拇指区，1 次点击
+       主题色 / 语言 / ? 帮助 = ☰ 抽屉                           ← 低频设置项
+     为什么不是「三行顶栏」：把三排控件都挂在顶部会占掉视口 23%，而内容站的第一屏要留给词条；
+     导航放底部是手机端内容站的通行做法，且不再和收藏/语言抢同一行的宽度。
+     顺带修掉两个旧缺口：① .nav-links 在 ≤960 是 display:none，「自测 / 更新」在手机上原本没有入口；
+     ② ≤960 的 44px 规则把 .lang-btn 压成 44px 宽，「中文」被挤成两行。
      ============================================================ */
-  :root{--nav-h:110px}
-  /* row-gap 取 0、由「换行元素」自己撑出 6px 间距——这样顶栏总高是确定的
-     8 + 44 + 6 + 44 + 8 = 110px，与 --nav-h 严格相等（避免行间距被算两次） */
-  .nav{flex-wrap:wrap;align-content:center;gap:0 8px;padding:8px 12px}
-  /* 强制换行：::before 作为 flex 项独占一整行（伪元素也是 .nav 的 flex 项），
-     把其后按 order 排好的「行 2」内容顶到下一行——不新增任何 DOM */
-  .nav::before{content:'';order:5;flex-basis:100%;height:6px;margin:0}
+  :root{--nav-h:60px}
+  .nav{flex-wrap:nowrap;gap:0 8px;padding:8px 12px}
+  .nav::before{display:none}      /* 不再换行，两条「撑行」规则一并停用 */
   .nav-drawer-btn{order:1}
   .nav-brand{order:2}
   .nav-brand .brand-stage{display:none}     /* 窄屏只留 logo 图标（参考站手机端同款：只有 vh-logo） */
   .nav-search{order:3;flex:1 1 auto;min-width:0;margin-left:0;height:38px;padding:0 10px}
   .theme-btn{order:4}
-  /* v1.1.3：≤560 是两行顶栏，实测 320–375 下再塞一个 44px 控件会把搜索框压到 90–115px，
-     故「主题色」「语言」这一档才收进抽屉（561–960 的单行顶栏放得下，留在顶栏）。见 syncHeaderTools() */
+  /* v1.1.3：主题色与语言在 ≤560 收进抽屉（见 syncHeaderTools）；顶栏一行放不下它们 */
   .nav>.nav-color{display:none}
   .nav>.lang-sw{display:none}
-  .nav-links{order:6;display:flex;flex:1 1 auto;min-width:0;gap:2px}
-  .nav-links a{flex:1 1 auto;min-width:0;display:inline-flex;align-items:center;justify-content:center;
-    height:44px;padding:0 8px;border-radius:9px;white-space:nowrap}
-  .nav-fav{order:7;flex:none;width:auto;height:44px;padding:0 10px;margin-left:auto}
-  .nav-fav span.fav-label{display:inline}   /* 行 2 有位置，星标旁补回「收藏」二字 */
-  .lang-sw{order:8;flex:none}
-  .lang-btn{width:auto;height:44px;padding:0 10px}
+  /* 导航与收藏已搬进底部 tab 栏；这两条是「JS 未就位」时的兜底。
+     必须写成 .nav> 直接子元素——不然规则会跟着节点进 tab 栏，把 tab 一起藏掉。
+     放在 ≤960 段：与 tab 栏出现的断点一致。 */
+  .nav>.nav-links,.nav>.nav-fav{display:none}
+}
+/* ============================================================
+   v1.1.3：≤960 的底部 tab 栏（#tabBar 是容器，导航与收藏由 JS 搬进来）
+   —— 断点与「顶栏导航隐藏」的断点严格一致：561–960 这一段顶栏 .nav-links 是 display:none，
+   于是「自测 / 更新」在这个区间（含 iPad 竖屏 768）原本**没有任何入口**（实测：唯一那两个
+   链接宽度为 0）。把导航搬到底部后，全区间「词条 / 自测 / 更新 / 收藏」都是一次点击。
+   ≥961 顶栏放得下，tab 栏隐藏、节点搬回顶栏；安全区内边距用 env() 兜住 iPhone 横条。
+   ============================================================ */
+.tabbar{display:none}
+@media (max-width:960px){
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;align-items:center;gap:2px;
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
+    background:var(--nav-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-top:1px solid var(--border-light)}
+  .tabbar[hidden]{display:none}
+  .tabbar .nav-links{display:flex;flex:1 1 auto;min-width:0;gap:2px}
+  .tabbar .nav-links a{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;
+    height:44px;padding:0 4px;border-radius:10px;white-space:nowrap;font-size:13px}
+  .tabbar .nav-fav{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;
+    height:44px;padding:0 4px;margin:0;gap:4px;border:0;background:transparent;font-size:13px}
+  .tabbar .nav-fav:hover{background:var(--bg-hover)}
+  .tabbar .nav-fav span.fav-label{display:inline}
+  /* 内容与右下角浮标给 tab 栏让位 */
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  .back-top{bottom:calc(74px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(74px + env(safe-area-inset-bottom,0px))}
 }
 @media (prefers-reduced-motion:reduce){
   *,*:before,*:after{transition:none!important;animation:none!important}
@@ -1480,6 +1505,12 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   <button type="button" class="kbd-btn" id="kbdBtn" aria-haspopup="dialog" aria-expanded="false" title="键盘快捷键（?）"><i class="kbd-ic" aria-hidden="true">?</i><span class="dt-label" id="kbdLabel"></span></button>
   <button class="theme-btn" id="themeBtn" aria-label="颜色模式：跟随系统" title="颜色模式：跟随系统"></button>
 </header>
+
+<!-- v1.1.3（手机端顶栏重排）：≤560 的底部 tab 栏。
+     由 syncHeaderTools() 把顶栏的「主导航 #navLinks + 收藏 #navFav」搬进来（只搬节点、不复制），
+     顶栏因此空出一整行做搜索（110px → 60px）；回到更宽处再搬回顶栏。
+     导航语义仍在里面的 <nav id="navLinks"> 上，这里只是个定位容器。 -->
+<div class="tabbar" id="tabBar" hidden></div>
 
 <!-- v5（2026-09-27）：「继续上次」横幅（B1 简版）——本机 localStorage 记忆，无账号体系；内容由 syncResumeBar() 填充 -->
 <div class="resume-bar" id="resumeBar" hidden></div>
@@ -5191,6 +5222,20 @@ function syncHeaderTools(){
   if ((kbd.parentNode === tools) !== narrow){
     if (narrow) tools.appendChild(kbd);
     else nav.insertBefore(kbd, theme);
+  }
+  /* v1.1.3（手机端顶栏重排）：≤560 再把「主导航 + 收藏」搬到底部 tab 栏——顶栏因此只剩一行。
+     回顶栏时按原 DOM 顺序落位：导航插在搜索框之前，收藏插在语言控件之前（语言此时已先归位）。 */
+  var tabs = el('tabBar');
+  var links = el('navLinks'), fav = el('navFav'), search = el('navSearch');
+  if (tabs && links && fav && search){
+    if (narrow){
+      if (links.parentNode !== tabs) tabs.appendChild(links);
+      if (fav.parentNode !== tabs) tabs.appendChild(fav);
+    } else {
+      if (links.parentNode === tabs) nav.insertBefore(links, search);
+      if (fav.parentNode === tabs) nav.insertBefore(fav, lang || theme);
+    }
+    tabs.hidden = links.parentNode !== tabs;
   }
   tools.hidden = !(color.parentNode === tools || kbd.parentNode === tools || (lang && lang.parentNode === tools));
 }

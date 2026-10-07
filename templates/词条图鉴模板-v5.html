@@ -558,7 +558,7 @@ html.has-cursor-fx .cursor-fx{will-change:transform}
    分析误判为灰色，经 computed 实测纠正——CSS 级联以实测为准（教训记 MEMORY §32-16）。
    ≤720px 为参考站同款标题断点（仅缩英文 16px；中文由 clamp 自动缩），非站内布局断点 */
 h3.card-title{font-size:clamp(18px,5vw,22px);font-weight:600;letter-spacing:-.01em;color:var(--text);line-height:1.7}
-h3.card-title span{font-size:17px;font-weight:500;color:var(--brand);margin-left:6px}
+h3.card-title span{display:inline-block;font-size:17px;font-weight:500;color:var(--brand);margin-left:6px}   /* v1.1.3：inline-block 让英文名整体换行，不再被拆成「Online / Doc」两行 */
 @media (max-width:720px){
   h3.card-title span{font-size:16px}
 }
@@ -954,7 +954,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
 .detail-hero{margin-bottom:40px}
 .dh-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .dh-head h1{font-size:30px;font-weight:700;letter-spacing:-.02em}
-.dh-head h1 span{font-size:16px;font-weight:400;color:var(--text-3);margin-left:10px;letter-spacing:0}
+.dh-head h1 span{display:inline-block;font-size:16px;font-weight:400;color:var(--text-3);margin-left:10px;letter-spacing:0}   /* v1.1.3：同卡片标题，英文名整体换行 */
 .pron-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface);
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-3);
   font-size:14px;transition:color .15s,border-color .15s}
@@ -1119,7 +1119,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
 .theme-btn svg{width:16px;height:16px}
 
 /* ---- v4：主题色切换（对齐原站顶栏「主题色」菜单语义） ---- */
-.nav-color{position:relative;flex:none;display:inline-flex;align-items:center}   /* v1.1.3 修复：同一条粗指针规则给容器加了 min-height:44px，26px 圆点须居中——否则偏上 9px */
+.nav-color{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center}   /* v1.1.3：粗指针档容器被撑到 44px，26px 圆点须居中——否则偏上 9px、左右边距也不等（左 0 右 18），色板浮层 right:0 会跟着偏 18px */
 .nav-circle{width:26px;height:26px;padding:0;border-radius:50%;border:1px solid var(--border);
   background:var(--brand);cursor:pointer;transition:transform .15s,border-color .15s}
 .nav-circle:hover{transform:scale(1.08);border-color:var(--brand)}
@@ -1133,6 +1133,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
   background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--pop-shadow)}
 .color-pop[hidden],.lang-pop[hidden]{display:none}
 .lang-pop{min-width:136px}          /* 语言菜单只有两项，比色板窄 */
+.color-pop{right:calc(50% - 13px)}   /* v1.1.3：浮层右缘对齐「圆点」而非 44px 命中区——13px = 圆点半径，粗指针档自动得 9px、细指针档得 0 */
 .color-item,.lang-item{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;
   border:0;border-radius:8px;background:transparent;color:var(--text);font-size:13.5px;
   text-align:left;cursor:pointer;transition:background .12s}
@@ -1341,13 +1342,13 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
      收纳对象 = 快捷键帮助（?）+ 主题色；顶栏保留 汉堡 / 品牌 / 搜索 / 收藏 / 语言 / 明暗。
      控件本体不复制：由 syncHeaderTools() 在断点两侧把 DOM 节点搬进 / 搬出 #drawerTools，
      所以开合、Esc、点外部关闭等既有逻辑一字未改。 */
-  .nav>.kbd-btn,.nav>.nav-color{display:none}    /* JS 就位前的兜底：先不参与顶栏宽度 */
+  .nav>.kbd-btn{display:none}    /* JS 就位前的兜底：先不参与顶栏宽度（主题色在 ≤560 才收，见 syncHeaderTools） */
   .drawer-tools{display:flex;flex-direction:column;gap:2px;margin:0 0 10px;padding:0 0 10px;
     border-bottom:1px solid var(--border-light)}
   .drawer-tools[hidden]{display:none}
   .drawer-tools .dt-label{display:block;font-size:14px;color:var(--text-2)}
-  .drawer-tools .nav-color{position:relative;display:flex;align-items:center;gap:10px;
-    height:44px;padding:0 12px;border-radius:9px}
+  .drawer-tools .nav-color{position:relative;display:flex;align-items:center;justify-content:flex-start;gap:10px;
+    height:44px;padding:0 12px;border-radius:9px}   /* v1.1.3：抽屉里是「圆点 + 主题色」一行，须左对齐，抵消顶栏那条居中 */
   .drawer-tools .nav-circle{width:30px;height:30px}
   .drawer-tools .kbd-btn{width:100%;height:44px;padding:0 12px;justify-content:flex-start;gap:10px;
     border:0;background:transparent;font-family:inherit;font-size:14px;border-radius:9px}
@@ -1406,6 +1407,9 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .nav-brand .brand-stage{display:none}     /* 窄屏只留 logo 图标（参考站手机端同款：只有 vh-logo） */
   .nav-search{order:3;flex:1 1 auto;min-width:0;margin-left:0;height:38px;padding:0 10px}
   .theme-btn{order:4}
+  /* v1.1.3：≤560 是两行顶栏，实测 320–375 下再塞一个 44px 控件会把搜索框压到 90–115px，
+     故「主题色」这一档才收进抽屉（561–960 的单行顶栏放得下，留在顶栏）。见 syncHeaderTools() */
+  .nav>.nav-color{display:none}
   .nav-links{order:6;display:flex;flex:1 1 auto;min-width:0;gap:2px}
   .nav-links a{flex:1 1 auto;min-width:0;display:inline-flex;align-items:center;justify-content:center;
     height:44px;padding:0 8px;border-radius:9px;white-space:nowrap}
@@ -1469,8 +1473,9 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
 <div class="catalog-layout">
   <aside class="side-nav" id="sideNav">
     <!-- v5（2026-10-01 手机端顶栏横向溢出修复·方案 A）：抽屉工具区。
-         窄屏时由 syncHeaderTools() 把顶栏的「主题色」「快捷键帮助」两个次要控件搬进来
-         （回到桌面宽度再搬回顶栏）；桌面此处恒为空且隐藏，不影响常驻侧栏形态。 -->
+         由 syncHeaderTools() 把「快捷键帮助」在 ≤960、「主题色」在 ≤560 搬进来
+         （回到更宽处再搬回顶栏）；桌面此处恒为空且隐藏，不影响常驻侧栏形态。
+         v1.1.3：主题色只在两行顶栏（≤560）收进来——单行顶栏放得下，不该被一起收走。 -->
     <div class="drawer-tools" id="drawerTools" hidden></div>
     <div class="side-title" id="sideTitleTopic">主题</div>
     <nav id="topicChips" aria-label="主题目录"></nav>
@@ -1520,7 +1525,7 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
    2) 把 KB_TERMS 换成本模块词条——除 id/name/definition 外
       全部字段可选，留空则对应模块不渲染；
    3) 示意插图用 Demo Kit 积木拼装（配方见《文档/DemoKit配方册.md》）；
-   4) 所有占位内容带「【示例】」前缀，接入完成后应全部替换；
+   4) 所有占位内容带「【示例】」前缀（英文侧对应 `[Sample]`），接入完成后应全部替换；
    5) 改完打开 `#debug` 跑自检，0 错误再交付。
    ============================================================ */
 
@@ -1542,6 +1547,13 @@ var SITE_META = {
   brandShort: '模板',                      // 顶栏品牌简称（logo 旁常驻；悬停展开全称。缺省回落 brandName）
   brandTagline: '看图懂术语',              // 品牌名下副标题（悬停展开态的第二行）
   pageTitle: '词条图鉴模板 · 示例站点',    // 列表 / 搜索 / 收藏视图的标签页标题
+  /* v1.1.3：语言切换规范——凡「面向读者」的配置字段，同名字段 + En 就是它的英文值（不给则回退中文）。
+     引擎侧走 sm()，与 TOPICS[].nameEn / CATEGORIES[].nameEn 同一条口径。 */
+  brandNameEn: 'Glossary Atlas',
+  brandShortEn: 'Atlas',
+  brandTaglineEn: 'Terms, illustrated',
+  pageTitleEn: 'Glossary Atlas Template · Demo site',
+  footerNoteEn: 'Glossary Atlas Template · all data here is sample data · replaced by content/ at build time',
   navLinks: [                              // 顶栏导航：三个入口分别对应引擎的三个视图
     {label: '词条', current: true},        // v4：也可加外链项 {label:'外部站', href:'外部地址', external:true}
     {label: '自测', href: '#practice'},
@@ -1560,17 +1572,21 @@ var SITE_META = {
   themeColors: null
 };
 
-/* 主题（侧栏 chips，三级体系第一级；首页默认展示 DEFAULT_TOPIC） */
+/* 主题（侧栏 chips，三级体系第一级；首页默认展示 DEFAULT_TOPIC）
+   v1.1.3：nameEn / headingEn 是引擎既有的双语字段（缺则回退中文）——示例数据两侧都给，
+   这样切英文时侧栏与首页大标题也是英文。 */
 var TOPICS = [
-  {id: 't1', name: '【示例】办公协作', heading: '【示例】办公协作 术语图鉴'},
-  {id: 't2', name: '【示例】版本管理', heading: '【示例】版本管理 术语图鉴'}
+  {id: 't1', name: '【示例】办公协作', heading: '【示例】办公协作 术语图鉴',
+   nameEn: '[Sample] Collaboration', headingEn: '[Sample] Collaboration glossary'},
+  {id: 't2', name: '【示例】版本管理', heading: '【示例】版本管理 术语图鉴',
+   nameEn: '[Sample] Version control', headingEn: '[Sample] Version control glossary'}
 ];
 var DEFAULT_TOPIC = 't1';   // 打开即显示的主题（对应原站首页）
 
 /* 细分类（主题内分节；某主题可不设分类=扁平主题，词条 cat 填 null 并写 topic） */
 var CATEGORIES = [
-  {id: 'c1', topic: 't1', name: '【示例】文档协作'},
-  {id: 'c2', topic: 't1', name: '【示例】沟通会议'}
+  {id: 'c1', topic: 't1', name: '【示例】文档协作', nameEn: '[Sample] Document collaboration'},
+  {id: 'c2', topic: 't1', name: '【示例】沟通会议', nameEn: '[Sample] Meeting notes'}
 ];
 
 /* ================== 词条数据：接入时整体替换 ==================
@@ -1998,6 +2014,16 @@ function MT(key){
 function FL(key){
   return (state.lang === 'en' && I18N_EN.labels[key] != null) ? I18N_EN.labels[key] : FIELD_LABELS[key];
 }
+/* v1.1.3：配置层双语取词——SITE_META 里「同名 + En」的字段有值就用（brandNameEn / brandShortEn /
+   brandTaglineEn / pageTitleEn / footerNoteEn …），没给就回退中文。与 TOPICS[].nameEn /
+   CATEGORIES[].nameEn 是同一条口径：派生项目按需补字段，一个不补也不影响中文界面。 */
+function sm(key){
+  if (state.lang === 'en'){
+    var en = SITE_META[key + 'En'];
+    if (en) return en;
+  }
+  return SITE_META[key];
+}
 function setLang(l){
   if (l !== 'en' && l !== 'zh') return;
   if (state.lang === l) return;
@@ -2039,6 +2065,12 @@ function applyLangDom(){
   /* v5（2026-09-28 工程线体检 D2 修复）：切语言时链接文案必须重渲——此前只刷了容器 aria，
      英文界面下「词条 / 自测 / 更新」永远显示中文标签 */
   renderNavLinks();
+  /* v1.1.3：配置层那几处读者可见文本也跟着语言走（值来自 sm()，见其注释）。
+     不刷这里，切英文后顶栏简称 / 页脚 / 品牌副题会一直停在中文。 */
+  var bs = el('brandShort'); if (bs) bs.textContent = sm('brandShort') || sm('brandName');
+  var bn = el('brandName'); if (bn) bn.textContent = sm('brandName');
+  var bt2 = el('brandTagline'); if (bt2) bt2.textContent = sm('brandTagline');
+  var sf = el('siteFooter'); if (sf) sf.textContent = sm('footerNote');
   var tc = el('topicChips');
   if (tc) tc.setAttribute('aria-label', ts('topicDir', '主题目录'));
   var cl = el('catList');
@@ -2058,6 +2090,9 @@ function applyLangDom(){
   if (cll) cll.textContent = ts('themeColorAria', '主题色');
   var kll = el('kbdLabel');
   if (kll) kll.textContent = ts('kbdTitle', '键盘快捷键');
+  /* v1.1.3 修复：顶栏 ? 按钮的 title 是静态中文，此前切英文后仍是「键盘快捷键（?）」——唯独它漏在语言层之外 */
+  var kb = el('kbdBtn');
+  if (kb) kb.setAttribute('title', ts('kbdTitle', '键盘快捷键') + (zh ? '（?）' : ' (?)'));
   var bt = el('backTop');
   if (bt){
     var btl = ts('backTopAria', '回到顶部');
@@ -2823,7 +2858,7 @@ function renderTopicView(){
   /* v3 修复 B7 + v4：回到列表视图时恢复标签页标题（搜索结果走 searchTitle 模板） */
   document.title = state.q
     ? metaTitleOf('searchTitle')
-    : SITE_META.pageTitle;
+    : sm('pageTitle');
 
   if (state.q){
     /* v2：全局搜索——跨全部主题聚合，按主题分组展示（v5：搜索词条走 termsView，英文模式搜英文） */
@@ -3073,7 +3108,7 @@ function renderChangelogView(){
   view.innerHTML = html;
   view.hidden = false;
   el('termView').hidden = true;
-  document.title = (SITE_META.changelogTitle ? metaTitleOf('changelogTitle') : SITE_META.pageTitle);
+  document.title = (SITE_META.changelogTitle ? metaTitleOf('changelogTitle') : sm('pageTitle'));
   syncCatActive();        /* 更新日志视图没有分节，此调用只为清掉残留高亮 */
   syncClSideActive();     /* 侧栏月份高亮对齐当前滚动位置 */
   syncClFilterInd();      /* 筛选条滑动指示器定位 */
@@ -4807,6 +4842,10 @@ function bindEvents(){
     if (mqNarrow.addEventListener) mqNarrow.addEventListener('change', syncHeaderTools);
     else if (mqNarrow.addListener) mqNarrow.addListener(syncHeaderTools);   /* 老浏览器回退 */
   }
+  if (mqPhone){
+    if (mqPhone.addEventListener) mqPhone.addEventListener('change', syncHeaderTools);
+    else if (mqPhone.addListener) mqPhone.addListener(syncHeaderTools);
+  }
 
   /* v5（2026-09-27）：快捷键帮助面板——顶栏 ? 按钮 + 遮罩/× 关闭 */
   el('kbdBtn').addEventListener('click', function(){
@@ -4818,29 +4857,35 @@ function bindEvents(){
   });
 }
 /* v5（2026-10-01 手机端顶栏横向溢出修复·方案 A）：窄屏顶栏按钮收纳。
-   把顶栏两个次要控件（主题色 #navColor、快捷键帮助 #kbdBtn）在 ≤960 断点搬进汉堡抽屉的
-   #drawerTools，回到桌面宽度再按 HTML 声明顺序搬回顶栏（主题色 → 快捷键 → 明暗）。
-   只搬节点、不复制副本，也不重绑事件——监听器挂在节点上，跟着节点走，所以色板/帮助面板的
-   开合、Esc 优先级链、点外部关闭等逻辑全部沿用原样。幂等：已在目标位置就直接返回。 */
+   v1.1.3：两个控件改为**分开判**——
+     ① 快捷键帮助 #kbdBtn：≤960 一律收进汉堡抽屉。触屏设备没有键盘快捷键，留在顶栏只占位。
+     ② 主题色 #navColor：只在 ≤560 收进抽屉。561–960 是单行顶栏，实测放得下；≤560 是两行顶栏，
+        320–375 下再塞一个 44px 控件会把搜索框压到 90–115px（两种方案实拍对比过），故这一档才收。
+   搬动只搬节点、不复制副本，也不重绑事件——监听器挂在节点上，跟着节点走，所以色板/帮助面板的
+   开合、Esc 优先级链、点外部关闭等逻辑全部沿用原样。幂等：已在目标位置就不动。 */
 var mqNarrow = window.matchMedia ? window.matchMedia('(max-width: 960px)') : null;
+var mqPhone = window.matchMedia ? window.matchMedia('(max-width: 560px)') : null;
 function syncHeaderTools(){
   var tools = el('drawerTools'), color = el('navColor'), kbd = el('kbdBtn'), theme = el('themeBtn');
   if (!tools || !color || !kbd || !theme) return;
+  var nav = theme.parentNode;
+  if (!nav) return;
   var narrow = !!(mqNarrow && mqNarrow.matches);
-  var inDrawer = (color.parentNode === tools);
-  if (narrow === inDrawer) return;                 /* 已在目标位置，不做无谓搬动 */
-  if (narrow){
-    if (colorMenuOpen()) closeColorMenu(false);    /* 搬动前收起色板，避免浮层跟着节点跳位 */
-    tools.appendChild(color);
-    tools.appendChild(kbd);
-    tools.hidden = false;
-  } else {
-    var nav = theme.parentNode;
-    if (!nav) return;
-    nav.insertBefore(color, theme);                /* 两次都插在明暗按钮之前，顺序即恢复原样 */
-    nav.insertBefore(kbd, theme);
-    tools.hidden = true;
+  var phone = !!(mqPhone && mqPhone.matches);
+  /* 先主题色、后快捷键：两者都在抽屉里要回顶栏时，这样插回去才是原来的 DOM 顺序（主题色 → 快捷键 → 明暗） */
+  if ((color.parentNode === tools) !== phone){
+    if (phone){
+      if (colorMenuOpen()) closeColorMenu(false);  /* 搬动前收起色板，避免浮层跟着节点跳位 */
+      tools.appendChild(color);
+    } else {
+      nav.insertBefore(color, theme);
+    }
   }
+  if ((kbd.parentNode === tools) !== narrow){
+    if (narrow) tools.appendChild(kbd);
+    else nav.insertBefore(kbd, theme);
+  }
+  tools.hidden = !(color.parentNode === tools || kbd.parentNode === tools);
 }
 function openDrawer(){
   var nav = el('sideNav');
@@ -5336,13 +5381,13 @@ function renderNavLinks(){
   syncNavCurrent();
 }
 function initShell(){
-  document.title = SITE_META.pageTitle;
-  el('brandShort').textContent = SITE_META.brandShort || SITE_META.brandName;   /* v5（2026-09-27）：logo 旁常驻简称 */
-  el('brandName').textContent = SITE_META.brandName;
-  el('brandTagline').textContent = SITE_META.brandTagline;
+  document.title = sm('pageTitle');
+  el('brandShort').textContent = sm('brandShort') || sm('brandName');   /* v5（2026-09-27）：logo 旁常驻简称（v1.1.3：走 sm()，可给 brandShortEn） */
+  el('brandName').textContent = sm('brandName');
+  el('brandTagline').textContent = sm('brandTagline');
   /* v4.1：搜索框 placeholder / aria 与其余静态中文 aria 改由 applyLangDom 按界面语言设置 */
   applyLangDom();
-  el('siteFooter').textContent = SITE_META.footerNote;
+  el('siteFooter').textContent = sm('footerNote');
   el('navBrand').setAttribute('href', listHashOf());
   /* v4：导航项改真链接（此前是没有 href 的 <a>，键盘根本到不了）。
      站内项带 data-topic 走 hash 路由；带 href 的按外链渲染。

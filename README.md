@@ -44,13 +44,14 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 │   ├── 起步.mjs                 一条命令把骨架变成能跑的项目
 │   ├── 拼合.mjs                 content/ → dist/ 单文件站点
 │   ├── 校验.mjs                 交付前自检，要求「0 错误 · 0 警告」
+│   ├── 体检.mjs                 窄屏排版体检：多宽度 × 多视图扫一遍（需无头 Chrome）
 │   ├── lib-md.mjs               Markdown 知识库解析器（拼合与校验共用）
 │   ├── 收录草稿.mjs             草稿 → 知识库
 │   ├── 重排编号.mjs             编号压实（`--step=N`），日常不用
 │   └── 预览服务.mjs             本地静态服务器
 ├── skills/                     AI 助手用的操作规程：生成卡片 / 收录上线
 ├── templates/                  母版与可复用页面（都不是构建脚本读的，按需复制）
-│   ├── 词条图鉴模板-v5.html     单文件引擎母版（含 PYI 拼音表）
+│   ├── 词条图鉴模板-v5.html     单文件引擎母版（含 PYI 拼音表）—— 可直接双击打开预览
 │   └── 项目进度模板-v1.html     进度看板模板（只改数据区，零外部请求）
 ├── docs/派生与排错.md           接线点行号、常见红字、源项目痕迹对照（README 配图在 docs/img/）
 ```
@@ -66,7 +67,22 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 4. **品牌名与产物名散落在 7 个文件、12 行里** → 完整清单见 docs。
 5. **`内容规范.md` 与 `skills/` 的正文**是按源项目写的 → 结构可沿用，举例的术语、主题名、行业名要换成你的。
 
-派生完成后，在自己的 README 或 `CONTRACT.md` 里记一行「派生自 glossary-atlas-template v1.1.0（commit &lt;短哈希&gt;）」，将来模板升级才追得回差异。
+派生完成后，在自己的 README 或 `CONTRACT.md` 里记一行「派生自 glossary-atlas-template v1.1.2（commit &lt;短哈希&gt;）」，将来模板升级才追得回差异。
+
+### 骨架的权威在哪（已经派生过就看这里）
+
+- **本仓库是骨架的权威来源**：引擎母版（`templates/`）与工程线脚本（`engineering/`）的改动**先在本仓库落地**，记进 [CHANGELOG.md](CHANGELOG.md) 的「骨架变更」，再向外分发。
+- **派生项目是消费者**：按 CHANGELOG 的骨架变更逐条对照同步，**只改骨架，不要覆盖你的 `content/`**。
+- **反向纪律**：如果你在自己的活动项目里改了骨架（真实内容在那边，很多问题只有它跑得出来），**当天把它搬回本仓库**并记一行——否则两边会分叉。
+- **为什么写这条**：v1.1.2 的顶栏修复与另一个项目的拼音补字，正是「两边各改一行、互不知情」造成的分叉：模板缺拼音、项目缺修复。同步一次的成本远低于"谁都以为自己是最新"。
+
+比对两边是否已经分叉，最快是比哈希（各自的仓库里各跑一次，看输出是否相同）：
+
+```bash
+git hash-object templates/词条图鉴模板-v5.html
+```
+
+改完样式之后，跑一次 `node engineering/体检.mjs`（详见 [docs/派生与排错.md](docs/派生与排错.md) 第五节）——窄屏问题只有扫过才知道。
 
 ### 附：项目进度看板（可选）
 
@@ -89,10 +105,10 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 
 ## 版本与来源
 
-- **当前版本**：`v1.1.1` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **当前版本**：`v1.1.2` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
-- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`，与该提交**逐字节一致**（SHA256 全等），**未含该项目任何内容数据、进度文档与产物**。文件注释里因此留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
-- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.1（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
+- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **13 个与 `af88476` 逐字节一致**（SHA256 全等）；`templates/词条图鉴模板-v5.html` 自 v1.1.2 起带一行 CSS 修复（顶栏语言按钮在 561–960px 视口被挤成两行，来历与实测见 [CHANGELOG.md](CHANGELOG.md)）。**未含该项目任何内容数据、进度文档与产物**；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
+- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.2（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
 
 ## 许可证
 

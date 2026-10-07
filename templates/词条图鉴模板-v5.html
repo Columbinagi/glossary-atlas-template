@@ -314,6 +314,7 @@ body.is-changelog .main{max-width:1080px;margin:0 auto}
 .cl-list{position:relative}
 .cl-list:before{content:"";position:absolute;left:5px;top:10px;bottom:14px;width:2px;
   background:var(--border-light);border-radius:2px}
+.cl-list.single:before{display:none}   /* v1.1.3：只有一条动态时不画时间轴线（单节点没有"连线"可连） */
 .cl-entry{position:relative;display:flex;gap:16px;padding:0 0 34px;scroll-margin-top:calc(var(--nav-h) + 28px)}
 .cl-entry:last-child{padding-bottom:6px}
 .cl-meta{flex:0 0 122px;display:flex;align-items:flex-start;gap:10px}
@@ -412,7 +413,8 @@ body.is-changelog .main{max-width:1080px;margin:0 auto}
   color:var(--text-2);font-size:13px;padding:8px 22px;cursor:pointer;font-family:inherit}
 .flash-ctrl .judge.yes:hover{color:#15803d;border-color:#15803d;background:rgba(21,128,61,.08)}
 .flash-ctrl .judge.no:hover{color:#cf222e;border-color:#cf222e;background:rgba(207,34,46,.08)}
-.flash-ctrl .judge:disabled{opacity:.35;cursor:default}
+.flash-ctrl .judge:disabled{visibility:hidden}   /* v1.1.3：翻面前不摆两枚灰按钮（原来 opacity:.35 看着像坏的）；留位不跳动，翻面后出现 */
+.flash-count{text-align:center;font-size:12px;color:var(--text-3);margin-top:8px;font-variant-numeric:tabular-nums}
 .flash-dots{display:flex;gap:6px;justify-content:center;margin-top:14px}
 .flash-dots i{width:8px;height:8px;border-radius:50%;background:var(--border)}
 .flash-dots i.cur{background:var(--brand)}
@@ -1357,6 +1359,12 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .drawer-tools .kbd-btn:hover{background:var(--bg-hover);color:var(--text)}
   /* 色板在抽屉里改为「贴左、铺满抽屉内宽」，避免沿用顶栏的 right:0 后向左溢出抽屉 */
   .drawer-tools .color-pop{right:auto;left:0;top:calc(100% + 6px);min-width:0;width:100%}
+  /* v1.1.3：语言控件（≤560 才收进来）——同一套「整行、左对齐、按钮无边框」的抽屉行 */
+  .drawer-tools .lang-sw{position:relative;display:flex;align-items:center;height:44px;padding:0 12px;border-radius:9px}
+  .drawer-tools .lang-btn{width:100%;height:44px;padding:0;justify-content:flex-start;gap:10px;
+    border:0;background:transparent;font-size:14px;border-radius:9px}
+  .drawer-tools .lang-btn:hover{background:var(--bg-hover);color:var(--text)}
+  .drawer-tools .lang-pop{right:auto;left:0;top:calc(100% + 6px);min-width:0;width:100%}
 }
 /* v5（2026-10-02 多端适配·件 3）：触屏设备（含触屏笔记本）的顶栏控件补到 44px 可点高度。
    问题：2026-09-27 落的「Apple 44px」规则只挂在 ≤960 断点上，于是 961–1440 的触屏平板横屏
@@ -1380,6 +1388,10 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
     padding:8px 12px;white-space:normal;max-width:none;box-shadow:none}
   .entry-nav .float-nav.left{justify-content:flex-start;text-align:left}
   .entry-nav .float-nav.right{justify-content:flex-end;text-align:right}
+  /* v1.1.3：只剩一条时（首/末条）不再被 flex:1 1 0 拉满整宽——实测 doc-online 的「下一条」曾占满 900px，
+     左端 700px 全空，看着像个坏掉的输入框。只有一条时改为贴合内容，right 侧靠右。 */
+  .entry-nav .float-nav:only-child{flex:0 1 auto}
+  .entry-nav .float-nav.right:only-child{margin-left:auto}
   .entry-nav .fn-text{display:block;min-width:0;overflow-wrap:anywhere;white-space:normal}
   .entry-nav .fn-arrow{flex:none;font-size:14px}
 }
@@ -1410,8 +1422,9 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .nav-search{order:3;flex:1 1 auto;min-width:0;margin-left:0;height:38px;padding:0 10px}
   .theme-btn{order:4}
   /* v1.1.3：≤560 是两行顶栏，实测 320–375 下再塞一个 44px 控件会把搜索框压到 90–115px，
-     故「主题色」这一档才收进抽屉（561–960 的单行顶栏放得下，留在顶栏）。见 syncHeaderTools() */
+     故「主题色」「语言」这一档才收进抽屉（561–960 的单行顶栏放得下，留在顶栏）。见 syncHeaderTools() */
   .nav>.nav-color{display:none}
+  .nav>.lang-sw{display:none}
   .nav-links{order:6;display:flex;flex:1 1 auto;min-width:0;gap:2px}
   .nav-links a{flex:1 1 auto;min-width:0;display:inline-flex;align-items:center;justify-content:center;
     height:44px;padding:0 8px;border-radius:9px;white-space:nowrap}
@@ -1475,9 +1488,9 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
 <div class="catalog-layout">
   <aside class="side-nav" id="sideNav">
     <!-- v5（2026-10-01 手机端顶栏横向溢出修复·方案 A）：抽屉工具区。
-         由 syncHeaderTools() 把「快捷键帮助」在 ≤960、「主题色」在 ≤560 搬进来
+         由 syncHeaderTools() 把「快捷键帮助」在 ≤960、「主题色」「语言」在 ≤560 搬进来
          （回到更宽处再搬回顶栏）；桌面此处恒为空且隐藏，不影响常驻侧栏形态。
-         v1.1.3：主题色只在两行顶栏（≤560）收进来——单行顶栏放得下，不该被一起收走。 -->
+         v1.1.3：主题色与语言只在两行顶栏（≤560）收进来——单行顶栏放得下，不该被一起收走。 -->
     <div class="drawer-tools" id="drawerTools" hidden></div>
     <div class="side-title" id="sideTitleTopic">主题</div>
     <nav id="topicChips" aria-label="主题目录"></nav>
@@ -2233,6 +2246,7 @@ var I18N_EN = {
   clTitle: 'Changelog', clCount: '{n} updates', clEmpty: 'No entries yet.', clTermsHead: 'New terms ({n})',
   clNavTitle: 'Timeline', clByMonth: 'Jump to month',
   clStatIter: 'major updates', clStatTerms: 'terms added', clStatImpr: 'feature improvements',
+  clStatsLabel: 'Statistics',   /* v1.1.3：统计块的组标题 */
   clFilterLabel: 'Filter timeline', clFilterAll: 'All', clFilterUpdate: 'Feature updates', clFilterTerms: 'New terms',
   clSubtitle: 'Every term added, every feature improved, and where the learning path stands.',
   backTopAria: 'Back to top',
@@ -2242,6 +2256,7 @@ var I18N_EN = {
   flashFlipAria: 'Flashcard: click or press Space to flip', flashHint: 'Click to flip · recall first',
   flashBackHint: 'In one line', flashSrc: 'From card: {n}',
   judgeYes: 'Got it', judgeNo: 'Not yet',
+  practiceProgress: 'Known {ok} / {n}',   /* v1.1.3：自测进度数字 */
   practiceDone: 'All done: {n} / {m} (missed cards came back until you got them)', practiceAgain: 'Go again',
   compareBtn: 'Compare', compareTitle: 'Compare terms', comparePick: 'Pick a term to compare',
   backToTerm: 'Back to term', cmpDefLabel: 'What it is', cmpPtsLabel: 'Key points',
@@ -3303,6 +3318,8 @@ function renderChangelogView(){
     sideHtml += '</nav></div>';
   }
   sideHtml += '<div class="cl-stats">' +
+    /* v1.1.3：统计块补组标题——原来三个数字没有归属，和上面的「时间定位」分不清是一组还是两组 */
+    '<div class="cl-side-head">' + ts('clStatsLabel', '统计') + '</div>' +
     '<div class="cl-stat"><span class="cl-stat-num">' + list.length + '</span><span class="cl-stat-label">' + ts('clStatIter', '次重要迭代') + '</span></div>' +
     '<div class="cl-stat"><span class="cl-stat-num">' + termTotal + '</span><span class="cl-stat-label">' + ts('clStatTerms', '个收录词汇') + '</span></div>' +
     '<div class="cl-stat"><span class="cl-stat-num">' + imprTotal + '</span><span class="cl-stat-label">' + ts('clStatImpr', '项功能改进') + '</span></div>' +
@@ -3330,7 +3347,8 @@ function renderChangelogView(){
   if (!shown.length){
     html += '<div class="empty-tip">' + ts('clEmpty', '这一类下还没有记录。') + '</div>';
   } else {
-    html += '<div class="cl-list">';
+    /* v1.1.3：只有一条时加 single 类——否则 .cl-list:before 那条时间轴线会从圆点往下悬空 160px 断掉 */
+    html += '<div class="cl-list' + (shown.length === 1 ? ' single' : '') + '">';
     var lastMonth = '';
     for (var i = 0; i < shown.length; i++){
       var c = shown[i] || {};
@@ -3428,7 +3446,7 @@ function renderPracticeView(){
     '<div class="flash-stage">' +
       '<div class="flash-card" id="fCard" tabindex="0" role="button" aria-label="' + ts('flashFlipAria', '闪卡：点击或按空格翻面') + '">' +
         '<div class="flash-face"><div class="hint">' + ts('flashHint', '点击卡片翻面 · 先在脑子里回忆') + '</div>' +
-          '<div class="term" id="fTerm"></div><div class="en" id="fEn"></div><div class="src" id="fSrc1"></div></div>' +
+          '<div class="term" id="fTerm"></div><div class="en" id="fEn"></div></div>' +   /* v1.1.3：正面去掉「来源卡：xxx」——它与正面大标题是同一个词条名，白占一行 */
         '<div class="flash-face back"><div class="hint">' + ts('flashBackHint', '一句话答案') + '</div>' +
           '<div class="line" id="fLine"></div><div class="src" id="fSrc2"></div></div>' +
       '</div>' +
@@ -3437,6 +3455,7 @@ function renderPracticeView(){
         '<button type="button" class="judge yes" id="fYes" disabled>' + ts('judgeYes', '会了') + '</button>' +
       '</div>' +
       '<div class="flash-dots" id="fDots" aria-hidden="true"></div>' +
+      '<div class="flash-count" id="fCount"></div>' +   /* v1.1.3：圆点之外补一个可读的进度数字 */
     '</div>';
   view.innerHTML = html;
   view.hidden = false;
@@ -3476,8 +3495,7 @@ function practiceRenderQ(){
   el('fLine').textContent = c.scenario || c.definition || '';
   var src = (c.__seq ? c.__seq + ' ' : '') + c.name;
   var srcTxt = ts('flashSrc', '来源卡：' + src, { n: src });
-  el('fSrc1').textContent = srcTxt;
-  el('fSrc2').textContent = srcTxt;
+  el('fSrc2').textContent = srcTxt;   /* v1.1.3：正面那份已删（与正面大标题重复），背面保留 */
   el('fCard').classList.remove('flip');
   fFlip = false;
   el('fYes').disabled = true;
@@ -3489,6 +3507,11 @@ function practiceRenderQ(){
     d += '<i class="' + (st === true ? 'ok' : st === false ? 'ng' : (i === fCur ? 'cur' : '')) + '"></i>';
   }
   el('fDots').innerHTML = d;
+  /* v1.1.3：进度数字（与圆点同一份状态，给"还要几张"一个可读的答案） */
+  var okN = 0;
+  for (var q = 0; q < fState.length; q++){ if (fState[q] === true) okN++; }
+  var fc = el('fCount');
+  if (fc) fc.textContent = ts('practiceProgress', '已会 ' + okN + ' / ' + fPool.length, { ok: okN, n: fPool.length });
 }
 function practiceFlip(){
   fFlip = !fFlip;
@@ -4190,9 +4213,14 @@ function buildToc(){
   nav.setAttribute('aria-label', ts('tocTitle', '本页目录'));
   nav.innerHTML = '<span class="toc-title">' + esc(ts('tocTitle', '本页目录')) + '</span>' +
     '<div class="toc-chips">' + chips + '</div>';
-  /* 插入位置：flow（主线位置）之后；没有 flow 就放正文最前 */
+  /* 插入位置（v1.1.3 改）：hero（标题 + 引文 + 定义 + 先知道/别名）之后、示意图之前。
+     原来是「flow 之后，没有 flow 就放正文最前」，结果目录行压在 H1 上面——实测标题被顶到 y≈306
+     （视口 1/4 处），层级读起来像「目录 → 标题」。hero 是 morph 的标定对象，刻意不往里插节点，
+     所以改成插在它后面：阅读顺序变成 标题 → 目录 → 正文。 */
+  var hero = body.querySelector('.detail-hero');
   var flow = body.querySelector('.flow-wrap');
-  if (flow && flow.nextSibling) body.insertBefore(nav, flow.nextSibling);
+  if (hero) body.insertBefore(nav, hero.nextSibling);
+  else if (flow && flow.nextSibling) body.insertBefore(nav, flow.nextSibling);
   else body.insertBefore(nav, body.firstChild);
   /* v1.1.3：chips 的横向滚动不冒泡到 window（引擎的 scroll rAF 接不到），单独挂一个被动监听；
      目录每次重建都会换掉这个元素，监听随旧元素一起丢弃，不会累积 */
@@ -5128,35 +5156,41 @@ function bindEvents(){
   });
 }
 /* v5（2026-10-01 手机端顶栏横向溢出修复·方案 A）：窄屏顶栏按钮收纳。
-   v1.1.3：两个控件改为**分开判**——
+   v1.1.3：三个控件改为**分开判**——
      ① 快捷键帮助 #kbdBtn：≤960 一律收进汉堡抽屉。触屏设备没有键盘快捷键，留在顶栏只占位。
-     ② 主题色 #navColor：只在 ≤560 收进抽屉。561–960 是单行顶栏，实测放得下；≤560 是两行顶栏，
-        320–375 下再塞一个 44px 控件会把搜索框压到 90–115px（两种方案实拍对比过），故这一档才收。
+     ② 主题色 #navColor + 语言 #langSw：只在 ≤560 收进抽屉。561–960 是单行顶栏，实测放得下；
+        ≤560 是两行顶栏，320–375 下再塞一个 44px 控件会把搜索框压到 90–115px（两种方案实拍对比过）。
+        顺带修掉「收藏 · 中文」贴在一起像一组的问题：第二行现在只剩「导航 + 收藏」。
    搬动只搬节点、不复制副本，也不重绑事件——监听器挂在节点上，跟着节点走，所以色板/帮助面板的
    开合、Esc 优先级链、点外部关闭等逻辑全部沿用原样。幂等：已在目标位置就不动。 */
 var mqNarrow = window.matchMedia ? window.matchMedia('(max-width: 960px)') : null;
 var mqPhone = window.matchMedia ? window.matchMedia('(max-width: 560px)') : null;
 function syncHeaderTools(){
-  var tools = el('drawerTools'), color = el('navColor'), kbd = el('kbdBtn'), theme = el('themeBtn');
+  var tools = el('drawerTools'), color = el('navColor'), kbd = el('kbdBtn'), theme = el('themeBtn'), lang = el('langSw');
   if (!tools || !color || !kbd || !theme) return;
   var nav = theme.parentNode;
   if (!nav) return;
   var narrow = !!(mqNarrow && mqNarrow.matches);
   var phone = !!(mqPhone && mqPhone.matches);
-  /* 先主题色、后快捷键：两者都在抽屉里要回顶栏时，这样插回去才是原来的 DOM 顺序（主题色 → 快捷键 → 明暗） */
+  /* v1.1.3：三个控件、两个断点分开判，且必须按 DOM 原序（语言 → 主题色 → 快捷键）依次处理——
+     回顶栏一律 insertBefore(节点, 明暗按钮)，按原序插入才恢复得了原顺序。 */
+  if (lang && (lang.parentNode === tools) !== phone){
+    if (phone){
+      if (langMenuOpen()) closeLangMenu(false);   /* 搬动前收起菜单，避免浮层跟着节点跳位 */
+      tools.appendChild(lang);
+    } else nav.insertBefore(lang, theme);
+  }
   if ((color.parentNode === tools) !== phone){
     if (phone){
-      if (colorMenuOpen()) closeColorMenu(false);  /* 搬动前收起色板，避免浮层跟着节点跳位 */
+      if (colorMenuOpen()) closeColorMenu(false);
       tools.appendChild(color);
-    } else {
-      nav.insertBefore(color, theme);
-    }
+    } else nav.insertBefore(color, theme);
   }
   if ((kbd.parentNode === tools) !== narrow){
     if (narrow) tools.appendChild(kbd);
     else nav.insertBefore(kbd, theme);
   }
-  tools.hidden = !(color.parentNode === tools || kbd.parentNode === tools);
+  tools.hidden = !(color.parentNode === tools || kbd.parentNode === tools || (lang && lang.parentNode === tools));
 }
 function openDrawer(){
   var nav = el('sideNav');

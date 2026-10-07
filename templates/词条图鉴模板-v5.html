@@ -985,11 +985,12 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
 .detail-section{margin-bottom:40px}
 /* v5：词条页内小节目录（正文顶部一行 chips；窄屏横向滚动不折行）。
    条目由 buildToc() 在各模块渲染完成后从 DOM 收集，与真实渲染结果一一对应。 */
-.page-toc{display:flex;align-items:baseline;gap:10px;margin:0 0 26px;padding:10px 12px;
+.page-toc{position:relative;display:flex;align-items:baseline;gap:10px;margin:0 0 26px;padding:10px 12px;
   border:1px solid var(--border-light);border-radius:12px;background:var(--bg-soft)}
 .toc-title{flex:none;font-size:12px;color:var(--text-3);letter-spacing:.04em}
 .toc-chips{display:flex;align-items:center;gap:6px;overflow-x:auto;min-width:0;scrollbar-width:none}
 .toc-chips::-webkit-scrollbar{display:none}
+.toc-can-right::after{content:'';position:absolute;top:10px;bottom:10px;right:12px;width:30px;pointer-events:none;background:linear-gradient(to right,rgba(0,0,0,0),var(--bg-soft))}   /* v1.1.3：chip 行横向可滚动时的右缘渐隐提示（类名由 syncTocFade() 维护，滚到头即灭） */
 .toc-chip{flex:none;padding:4px 10px;border:1px solid var(--border);border-radius:999px;
   background:var(--surface);color:var(--text-2);font-size:12.5px;font-family:inherit;cursor:pointer;
   white-space:nowrap;transition:border-color .15s,color .15s,background .15s}
@@ -3887,6 +3888,20 @@ function buildToc(){
   var flow = body.querySelector('.flow-wrap');
   if (flow && flow.nextSibling) body.insertBefore(nav, flow.nextSibling);
   else body.insertBefore(nav, body.firstChild);
+  /* v1.1.3：chips 的横向滚动不冒泡到 window（引擎的 scroll rAF 接不到），单独挂一个被动监听；
+     目录每次重建都会换掉这个元素，监听随旧元素一起丢弃，不会累积 */
+  var chipsBox = nav.querySelector('.toc-chips');
+  if (chipsBox) chipsBox.addEventListener('scroll', syncTocFade, { passive: true });
+  syncTocFade();                                 /* 目录刚插入即同步一次渐隐提示 */
+}
+/* v1.1.3：chip 行横向可滚动时，右缘给一层渐隐提示（纯装饰：不占位、不改排版）。
+   开关由真实几何决定——右边还有内容才亮、滚到头就灭，不做「永远亮着」的假提示。 */
+function syncTocFade(){
+  var wrap = document.querySelector('.page-toc');
+  if (!wrap) return;
+  var box = wrap.querySelector('.toc-chips');
+  if (!box) return;
+  wrap.classList.toggle('toc-can-right', box.scrollWidth - box.clientWidth - box.scrollLeft > 2);
 }
 /* 滚动时高亮当前所在小节（挂在既有的 scroll rAF 里，与侧栏 scrollspy 同款做法） */
 function syncTocActive(){
@@ -3902,6 +3917,7 @@ function syncTocActive(){
   for (var c = 0; c < chips.length; c++){
     chips[c].classList.toggle('on', parseInt(chips[c].getAttribute('data-toc'), 10) === cur);
   }
+  syncTocFade();                    /* v1.1.3：同一帧里顺带同步右缘渐隐（滚动时它才会变） */
 }
 
 function renderTermView(){
@@ -4668,7 +4684,7 @@ function bindEvents(){
     });
   }, { passive: true });
   /* v4.1：窗口尺寸变了要重量正文列的位置（固定浮标贴在它两侧） */
-  window.addEventListener('resize', function(){ syncFloatAnchor(); syncClFilterInd(); });
+  window.addEventListener('resize', function(){ syncFloatAnchor(); syncClFilterInd(); syncTocFade(); });
 
   /* v5（2026-09-26）：回到顶部——平滑滚动可用则平滑，否则瞬移 */
   el('backTop').addEventListener('click', function(){

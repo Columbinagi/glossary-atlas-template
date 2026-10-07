@@ -167,7 +167,7 @@ html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c6
 .nav-brand:hover .bs-rest,.nav-brand:focus-visible .bs-rest{opacity:0;transform:translateY(calc(-50% - 5px));filter:blur(2px)}
 .nav-brand:hover .bs-hover,.nav-brand:focus-visible .bs-hover{opacity:1;transform:translateY(-50%);transition-delay:.11s}
 .nav-links{display:flex;gap:4px;flex:none}
-.nav-links a{padding:6px 12px;border-radius:8px;font-size:13.5px;color:var(--text-2);cursor:pointer}
+.nav-links a{display:inline-flex;align-items:center;padding:6px 12px;border-radius:8px;font-size:13.5px;color:var(--text-2);cursor:pointer}   /* v1.1.3 修复：粗指针档（@media any-pointer:coarse）的 min-height:44px 会把盒子撑高，文字须 flex 居中——否则偏上 5px */
 .nav-links a:hover{background:var(--bg-hover)}
 .nav-links a.current{color:var(--brand);font-weight:600}
 .nav-search{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 1 300px;
@@ -1118,7 +1118,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
 .theme-btn svg{width:16px;height:16px}
 
 /* ---- v4：主题色切换（对齐原站顶栏「主题色」菜单语义） ---- */
-.nav-color{position:relative;flex:none}
+.nav-color{position:relative;flex:none;display:inline-flex;align-items:center}   /* v1.1.3 修复：同一条粗指针规则给容器加了 min-height:44px，26px 圆点须居中——否则偏上 9px */
 .nav-circle{width:26px;height:26px;padding:0;border-radius:50%;border:1px solid var(--border);
   background:var(--brand);cursor:pointer;transition:transform .15s,border-color .15s}
 .nav-circle:hover{transform:scale(1.08);border-color:var(--brand)}

@@ -44,7 +44,7 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 │   ├── 起步.mjs                 一条命令把骨架变成能跑的项目
 │   ├── 拼合.mjs                 content/ → dist/ 单文件站点
 │   ├── 校验.mjs                 交付前自检，要求「0 错误 · 0 警告」
-│   ├── 体检.mjs                 窄屏排版体检：多宽度 × 多视图扫一遍（需无头 Chrome）
+│   ├── 体检.mjs                 窄屏排版体检：16 档宽度 × 4 视图（`--lang=en` 扫英文界面；需无头 Chrome）
 │   ├── lib-md.mjs               Markdown 知识库解析器（拼合与校验共用）
 │   ├── 收录草稿.mjs             草稿 → 知识库
 │   ├── 重排编号.mjs             编号压实（`--step=N`），日常不用
@@ -67,7 +67,7 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 4. **品牌名与产物名散落在 7 个文件、12 行里** → 完整清单见 docs。
 5. **`内容规范.md` 与 `skills/` 的正文**是按源项目写的 → 结构可沿用，举例的术语、主题名、行业名要换成你的。
 
-派生完成后，在自己的 README 或 `CONTRACT.md` 里记一行「派生自 glossary-atlas-template v1.1.2（commit &lt;短哈希&gt;）」，将来模板升级才追得回差异。
+派生完成后，在自己的 README 或 `CONTRACT.md` 里记一行「派生自 glossary-atlas-template v1.1.3（commit &lt;短哈希&gt;）」，将来模板升级才追得回差异。
 
 ### 骨架的权威在哪（已经派生过就看这里）
 
@@ -105,10 +105,10 @@ git hash-object templates/词条图鉴模板-v5.html
 
 ## 版本与来源
 
-- **当前版本**：`v1.1.2` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **当前版本**：`v1.1.3` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
-- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **13 个与 `af88476` 逐字节一致**（SHA256 全等）；`templates/词条图鉴模板-v5.html` 自 v1.1.2 起带一行 CSS 修复（顶栏语言按钮在 561–960px 视口被挤成两行，来历与实测见 [CHANGELOG.md](CHANGELOG.md)）。**未含该项目任何内容数据、进度文档与产物**；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
-- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.2（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
+- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **13 个与 `af88476` 逐字节一致**（SHA256 全等）；`templates/词条图鉴模板-v5.html` 自 v1.1.2 起带 CSS 修复，至今共 3 行（v1.1.2：顶栏语言按钮在 561–960px 视口被挤成两行；v1.1.3：顶栏导航项与主题色圆点的垂直对齐偏 5px / 9px，来历与实测见 [CHANGELOG.md](CHANGELOG.md)）。**未含该项目任何内容数据、进度文档与产物**；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
+- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.3（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
 
 ## 许可证
 

@@ -28,30 +28,31 @@
 | 4. 资源 / 前置件准备 | ✅ | 骨架 14 文件 + 双线目录 + 两个技能 + 体检工具链 |
 | 5. 执行 | ✅ | 内容线示例、工程线 8 个脚本、母版与文档全部到位 |
 | 6. **验收** | ✅ | V1–V9 全部通过；**V8 使用者 20261008 确认**（`ACCEPTANCE.md`） |
-| 7. 归档 | 🔵 **进行中** | 实测值已回填 `ACCEPTANCE.md`；`logs/审计-20261008/` 留档；`smoke.yml` 待补 |
+| 7. 归档 | ✅ | 实测值已回填 `ACCEPTANCE.md`；`logs/审计-20261008/` 留档；`smoke.yml` 已入库且 CI 首跑成功 |
 
 ## 三、当前状态
 
-**无阻塞卡点。** 20261008 已完成：`main` 推送（`0770d5b..4da8709`，11 个提交）＋ tag `v1.1.2`/`v1.1.3` ＋ 两个 Release（v1.1.3 为 Latest）＋ `is_template: true`。
+**已全部完成，无任何卡点。** 20261008：`main` 推送 ＋ tag `v1.1.2`/`v1.1.3` ＋ 两个 Release（v1.1.3 为 Latest）＋ `is_template: true` ＋ **CI 入库并首跑 success**（run `37759325869`，15s，三步全绿）。
 
-| 剩余项 | 后续 |
+| 遗留（非本项目问题，仅记录） | 后续 |
 |---|---|
-| `.github/workflows/smoke.yml` 未入库 | 需 token 具备 `workflow` 权限。本机代理（fcclient，`127.0.0.1:7892`）故障导致授权中断；**修好网络后**执行 `gh auth login -h github.com -p https --web -s workflow` → `git add .github/` → 提交推送。**不影响站点内容。** |
-| 本机 git 的仓库级 `http.proxy` 指向坏代理 | 建议 `git config --unset http.proxy`（直连可用），否则每次 git 操作先卡 20 秒再失败 |
+| 本机 git 的仓库级 `http.proxy` 指向 fcclient 代理，而该代理到 `github.com` 不通 | 建议 `git config --unset http.proxy`（GitHub 走直连已验证 4/4 可用）。**已给系统代理加 GitHub 绕过规则**，故浏览器不受影响 |
+| `git push` 走 github.com 时通时不通 | 备选路径：用 `gh api -X PUT .../contents/...` 经 `api.github.com` 提交（本次 CI 文件即如此入库） |
+| fcclient 节点对 `github.com` 域名族不通 | 属使用者日常网络事项；**切全局模式无效**，实测是节点上游对该域名族的路由问题 |
 
-## 四、上线清单（20261008 执行结果）
+## 四、上线清单（20261008 执行结果 · 全部完成）
 
 | # | 动作 | 状态 |
 |---|---|---|
-| 1 | 补 workflow 权限并纳入 CI | ⬜ **未完成**（代理故障致授权中断，见 §三） |
-| 2 | 提交工作区 | ✅ `4da8709`（16 文件，+1515/−50） |
+| 1 | 补 workflow 权限并纳入 CI | ✅ **已完成** —— `gh auth login`（账号名由旧 `NahidaTribbie` 修正为 `Columbinagi`，scopes 含 `workflow`）；文件经 API 入库（提交 `f84ad4a`）；**CI 首跑 success** |
+| 2 | 提交工作区 | ✅ `4da8709`（16 文件，+1515/−50）＋ `dbf3dbf`（发布记录）＋ `f84ad4a`（CI） |
 | 3 | 打 tag | ✅ `v1.1.2`（`7f0f854`）、`v1.1.3`（`4da8709`），已推送 |
-| 4 | push | ✅ `git push origin main`（直连绕开坏代理）＋ 两个 tag |
+| 4 | push | ✅ `main` 已推送；`git push` 时通时不通，CI 文件改用 GitHub API 入库 |
 | 5 | 建 Release | ✅ v1.1.2 / **v1.1.3（Latest）** |
 | 6 | 勾 Template repository | ✅ 本就已是 `true`，无需操作 |
 | 7 | 回填记录 | ✅ `ACCEPTANCE.md` / `MEMORY.md` / `ROADMAP.md`（本文件） |
 
-> 第 3–5 项已由使用者当轮授权执行；`push` 绕开了故障代理（`git -c http.proxy= push`）完成。
+> 第 1、3–5 项已由使用者当轮授权执行。**上线 100% 收尾。**
 
 ---
 

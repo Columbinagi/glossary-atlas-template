@@ -7,13 +7,15 @@
 ## 1. 项目概况
 
 **单文件、零外部请求的「术语图鉴」引擎母版 ＋ 内容 / 工程双线骨架**（PRO 版）。拿它派生一个新主题的图鉴站：内容线只写 Markdown，工程线一条命令出成品。
-**当前阶段：验收 → 发布**，卡在 **G4**（见 `ROADMAP.md` §三）。当前版本 `v1.1.3`（**尚未打 tag**）。
+**当前阶段：已上线**（`v1.1.3` 已发版，G5 已通过，见 `ROADMAP.md`）。
 
 ## 2. 当前状态（最新在上）
 
-- **20261008 · 上线完成**：`main` 推送至 `4da8709`（`0770d5b..4da8709`，11 个提交）＋ tag **`v1.1.2`**（`7f0f854`）与 **`v1.1.3`**（`4da8709`）＋ Release **v1.1.2** 与 **v1.1.3（Latest）**。`is_template` 本就是 `true`。
-  - **唯一未完成**：`.github/workflows/smoke.yml` 未入库 —— 推 workflow 文件需 token 具备 `workflow` 权限，而本机代理故障致授权中断（`gh` 配置里还存着旧账号名 `NahidaTribbie`，也会让 `gh auth refresh` 报"账号不符"）。
-  - **本机网络已知问题**：仓库级 `http.proxy = http://127.0.0.1:7892` 指向的 fcclient 代理故障（TLS 握手失败），且**浏览器也走它**（Windows 系统代理同值）→ 表现为"打不开 GitHub"。推送靠 `git -c http.proxy= push` 绕开代理直连完成。建议 `git config --unset http.proxy` 或修好 fcclient。
+- **20261008 · CI 入库并首跑成功 —— 上线 100% 收尾**：`.github/workflows/smoke.yml` 已入库（提交 `f84ad4a`），**CI 首跑 success**（run `37759325869`，15s，三步全绿：起步建骨架→拼合→校验 / 确认产物产出 / 确认骨架 14 文件仍在）。
+  - **gh 账号已修正**：此前 gh 配置里存着旧账号名 `NahidaTribbie`（账号已改名为 `Columbinagi`），导致 `gh auth refresh` 报"收到的是 Columbinagi 的凭据，你是不是用错账号了"、`workflow` 权限一直拿不到。20261008 重新登录后配置为 `Columbinagi`，token scopes 含 **`workflow`**（API `X-Oauth-Scopes` 实测确认），旧账号条目已 `gh auth logout` 清理。
+  - **本机网络：根因与最终解法（值得记住）** —— `fcclient`（肥猫云_Lite，`D:\Program\fcclient\`，混合端口 `127.0.0.1:7892`）的**节点到 `github.com` 这一族域名不通**：实测经代理 Google / Cloudflare / Wikipedia / `raw.githubusercontent.com` **全通**，只有 `github.com` / `api.github.com` / `gist.github.com` **超时**；**切全局模式也无效**（所以不是规则问题，是节点上游对这些域名的路由问题）。**解法：GitHub 不走代理、走直连**（直连实测 4/4 HTTP 200）。已做：关闭系统代理 ＋ 给 `ProxyOverride` 追加 `github.com;*.github.com;githubusercontent.com;*.githubusercontent.com` 绕过规则。
+  - **推送链路的坑**：`git push` 走 github.com 且**时通时不通**（曾被 `Recv failure: Connection was reset`，6 次全败）。最终 CI 文件是**用 `gh api -X PUT .../contents/...` 经 `api.github.com` 创建的**（那条一直稳定 200）。**以后推不上去时可复用这条路。**
+- **20261008 · 上线完成**：`main` 推送 ＋ tag **`v1.1.2`**（`7f0f854`）与 **`v1.1.3`**（`4da8709`）＋ Release **v1.1.2** 与 **v1.1.3（Latest）**。`is_template` 本就是 `true`。
 - **20261008**：**回头对齐一轮完成**（`project-bootstrap` skill 场景二）—— 此前本项目**七份骨架文档全缺**，现补建 `AGENTS.md` / `PRD.md` / `USER.md` / `MEMORY.md` / `SOUL.md` / `ROADMAP.md` / `ACCEPTANCE.md` ＋ `notes/`；`.gitignore` 补通用规则（含 `logs/`）；**过程产物从项目外搬回 `logs/审计-20261008/`**（9.3MB，不进版本库）。详细差异清单与批复见 [`notes/20261008_回头对齐一轮.md`](notes/20261008_回头对齐一轮.md)。
 - **20261008**：**导航断点 960 → 860**（CHANGELOG 续 10）—— 使用者验收时反馈"窗口一窄导航就从顶栏消失"；实测 861–960 顶栏放得下（搜索框 272–300px、零溢出），故把"导航让位底栏"的断点从 960 收到 860，与"单行顶栏/抽屉"的 960 解耦。**进所有派生项目产物。**
 - **20261008**：**独立审计后的 8 处修正**（CHANGELOG 续 9）—— ① 自测进度数字恒为 0（`fState.length` 写成对象取长度）② 闪卡翻面前答案已进无障碍树 ③ `--text-3` 对比度 3.24→4.83 ⑤ 面包屑分隔符 1.25→4.83 ⑥ `:hover`/`:focus-visible` 同列拆开 ⑦⑧ 注释订正 ⑫ safe-area 说明。**除 ⑧ 外全部进派生项目产物。**
@@ -34,12 +36,13 @@
 
 **待办**
 
-- [ ] `.github/workflows/smoke.yml` 入库（需 `workflow` 权限：`gh auth login -h github.com -p https --web -s workflow`；顺带修掉 gh 配置里的旧账号名）
-- [ ] 本机 git 的仓库级 `http.proxy` 指向坏代理 —— `git config --unset http.proxy` 或修好 fcclient
+- [ ] 本机 git 的仓库级 `http.proxy` 指向 fcclient 代理（`127.0.0.1:7892`），而该代理到 `github.com` 不通 —— 建议 `git config --unset http.proxy`（GitHub 走直连已验证可用）
 - [ ] 与源项目做一次分叉复核（`git hash-object` 两边比），按 `AGENTS.md` §九 第 1 条的反向纪律
+- [ ] fcclient 的节点问题（`github.com` 域名族经代理不通）—— 属使用者日常网络事项，不影响本项目
 
 **已完成**
 
+- [x] 20261008 **CI 入库并首跑成功**（`.github/workflows/smoke.yml`，run 37759325869 三步全绿）
 - [x] 20261008 **上线**：push `main` ＋ tag v1.1.2/v1.1.3 ＋ 两个 Release（v1.1.3 为 Latest）
 - [x] 20261008 **使用者验收 V8 通过**（原话：「我确定了现在的项目可以验收完成，可以上传了」）
 - [x] 20261008 回头对齐一轮（骨架文档 7 份 + `logs/` + `.gitignore` 通用规则 + 过程产物归位）

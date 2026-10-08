@@ -63,7 +63,7 @@
   --orange:#ff7d00; --orange-light:#fff7e8;
   --purple:#7c5ce0; --purple-light:#f3e8ff;
   --bg:#fff; --bg-soft:#f7f8fa; --bg-hover:#f2f3f5;
-  --text:#1d2129; --text-2:#4e5969; --text-3:#86909c;
+  --text:#1d2129; --text-2:#4e5969; --text-3:#6b7280;   /* v1.1.3（续 9）：--text-3 由 #86909c 调深。原值在白底 3.24:1、在 --bg-soft 上 3.05:1，低于 WCAG AA 正文门槛 4.5:1；新值 4.83:1 / 4.55:1。深色侧的同名变量在下面 html[data-theme="dark"] 块里单独定义，不受此处影响。 */
   --border:#e5e6eb; --border-light:#f0f1f3;
   --radius:12px;
   --shadow-card:0 1px 2px rgba(29,33,41,.05);
@@ -149,14 +149,20 @@ h1,h2,h3,h4,p{margin:0}
   transition:transform .36s cubic-bezier(.22,1,.36,1)}
 html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c63c0)}
 .nav-logo svg{width:14px;height:14px;display:block}   /* 14/30 = 47%，图形占方标自定比例（44–50%，本图鉴惯例；2026-09-29 事件二核实：HIG 无此量化口径，勿称 Apple 规范） */
-.nav-brand:hover .nav-logo,.nav-brand:focus-visible .nav-logo{transform:scale(1.04) rotate(-2deg)}
+/* v1.1.3（续 9）：:hover 与 :focus-visible 拆成两条规则。
+   原因是 CSS 选择器列表「一项解析失败则整条规则作废」——旧浏览器（Safari/iOS <15.4、Firefox <85、
+   Chrome <86）不认识 :focus-visible，同列写法会把 :hover 一起丢掉，品牌区悬停展开会整个失效。
+   拆开后旧浏览器只丢焦点环、悬停照常。以下四条同因同改，勿再合并。 */
+.nav-brand:hover .nav-logo{transform:scale(1.04) rotate(-2deg)}
+.nav-brand:focus-visible .nav-logo{transform:scale(1.04) rotate(-2deg)}
 /* v5（2026-09-27）：品牌文字舞台——对齐参考站 vh-logo-stage。
    简称常驻；悬停时舞台宽度展开（参考站同款曲线），全称与副题交叉淡入（淡出带模糊上移，参考站同时序）。
    宽度过渡为参考站「行内展开」形态的照搬（低频一次性、单行小元素；与动效红线的高频滚动场景不同，
    若要严守红线可改为浮层淡入，一句话可切换） */
 .brand-stage{position:relative;display:block;height:34px;width:36px;
   transition:width .5s cubic-bezier(.22,1,.36,1)}
-.nav-brand:hover .brand-stage,.nav-brand:focus-visible .brand-stage{width:158px}
+.nav-brand:hover .brand-stage{width:158px}
+.nav-brand:focus-visible .brand-stage{width:158px}
 .bs-rest{position:absolute;left:0;top:50%;transform:translateY(-50%);white-space:nowrap;pointer-events:none;
   font-size:15px;font-weight:650;letter-spacing:-.01em;color:var(--text);
   transition:opacity .24s ease,transform .42s cubic-bezier(.22,1,.36,1),filter .3s ease}
@@ -164,8 +170,10 @@ html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c6
   transition:opacity .24s ease,transform .42s cubic-bezier(.22,1,.36,1),filter .3s ease}
 .bs-hover b{display:block;font-size:13.5px;font-weight:650;letter-spacing:-.01em;color:var(--text);line-height:1.25}
 .bs-hover small{display:block;font-size:11px;color:var(--text-3);line-height:1.45}
-.nav-brand:hover .bs-rest,.nav-brand:focus-visible .bs-rest{opacity:0;transform:translateY(calc(-50% - 5px));filter:blur(2px)}
-.nav-brand:hover .bs-hover,.nav-brand:focus-visible .bs-hover{opacity:1;transform:translateY(-50%);transition-delay:.11s}
+.nav-brand:hover .bs-rest{opacity:0;transform:translateY(calc(-50% - 5px));filter:blur(2px)}
+.nav-brand:focus-visible .bs-rest{opacity:0;transform:translateY(calc(-50% - 5px));filter:blur(2px)}
+.nav-brand:hover .bs-hover{opacity:1;transform:translateY(-50%);transition-delay:.11s}
+.nav-brand:focus-visible .bs-hover{opacity:1;transform:translateY(-50%);transition-delay:.11s}
 .nav-links{display:flex;gap:4px;flex:none}
 .nav-links a{display:inline-flex;align-items:center;padding:6px 12px;border-radius:8px;font-size:13.5px;color:var(--text-2);cursor:pointer}   /* v1.1.3 修复：粗指针档（@media any-pointer:coarse）的 min-height:44px 会把盒子撑高，文字须 flex 居中——否则偏上 5px */
 .nav-links a:hover{background:var(--bg-hover)}
@@ -247,7 +255,7 @@ body.is-changelog .main{max-width:1080px;margin:0}
 .cl-crumb{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-3);margin-bottom:18px}
 .cl-crumb a{color:var(--text-3);text-decoration:none}
 .cl-crumb a:hover{color:var(--brand)}
-.cl-crumb .sep{color:var(--border)}
+.cl-crumb .sep{color:var(--text-3)}   /* v1.1.3（续 9）：原为 var(--border)（#e5e6eb，白底 1.25:1、深色 1.40:1，几乎不可见）；分隔符改用次级文字色 */
 .cl-crumb .cur{color:var(--text-2)}
 @media (max-width:900px){ .cl-side{display:none} }
 /* v1.1.3（统一主栏左边界）：页面级视图（更新日志 / 自测 / 对比）本就不渲染左栏，
@@ -1326,7 +1334,8 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
 .drawer-mask{display:none;position:fixed;inset:0;background:var(--mask);z-index:70}
 @media (max-width:960px){
   .nav{gap:12px;padding:0 16px}
-  .nav-links{display:none}
+  /* v1.1.3（续 10）：顶栏导航不再在这里隐藏——隐藏规则移到下面的 @media (max-width:860px)，
+     于是 861–960px 顶栏保留「词条 / 自测 / 更新」（实测：861px 搜索框 272px、900–960px 300px，顶栏零溢出）。 */
   .nav-drawer-btn{display:inline-flex}
   /* v4.1 修复：窄屏顶栏横向溢出（v4 在 512px 下右溢 61px，明暗按钮被挤出屏幕外）。
      根因是 .nav-search 不肯缩到 222px 以下——输入框的固有宽度仍在参与 min-content，
@@ -1422,8 +1431,9 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
        主题色 / 语言 / ? 帮助 = ☰ 抽屉                           ← 低频设置项
      为什么不是「三行顶栏」：把三排控件都挂在顶部会占掉视口 23%，而内容站的第一屏要留给词条；
      导航放底部是手机端内容站的通行做法，且不再和收藏/语言抢同一行的宽度。
-     顺带修掉两个旧缺口：① .nav-links 在 ≤960 是 display:none，「自测 / 更新」在手机上原本没有入口；
+     顺带修掉两个旧缺口：① .nav-links 在窄屏是 display:none，「自测 / 更新」在手机上原本没有入口；
      ② ≤960 的 44px 规则把 .lang-btn 压成 44px 宽，「中文」被挤成两行。
+     （续 10：导航让位给底栏的断点由 ≤960 收到 ≤860——861–960 顶栏放得下导航，实测零溢出。）
      ============================================================ */
   :root{--nav-h:60px}
   .nav{flex-wrap:nowrap;gap:0 8px;padding:8px 12px}
@@ -1431,25 +1441,41 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .nav-drawer-btn{order:1}
   .nav-brand{order:2}
   .nav-brand .brand-stage{display:none}     /* 窄屏只留 logo 图标（参考站手机端同款：只有 vh-logo） */
-  .nav-search{order:3;flex:1 1 auto;min-width:0;margin-left:0;height:38px;padding:0 10px}
-  .theme-btn{order:4}
+  /* v1.1.3（续 10）：导航在 861–960 要留在顶栏，必须显式给 order——
+     否则 .nav-links / .nav-fav 的默认 order:0 会把它们排到 ☰ 之前。 */
+  .nav-links{order:3}
+  .nav-search{order:4;flex:1 1 auto;min-width:0;margin-left:0;height:38px;padding:0 10px}
+  .nav-fav{order:5}
+  .theme-btn{order:6}
   /* v1.1.3：主题色与语言在 ≤560 收进抽屉（见 syncHeaderTools）；顶栏一行放不下它们 */
   .nav>.nav-color{display:none}
   .nav>.lang-sw{display:none}
-  /* 导航与收藏已搬进底部 tab 栏；这两条是「JS 未就位」时的兜底。
-     必须写成 .nav> 直接子元素——不然规则会跟着节点进 tab 栏，把 tab 一起藏掉。
-     放在 ≤960 段：与 tab 栏出现的断点一致。 */
+}
+/* ============================================================
+   v1.1.3（续 10）：导航与收藏让位给底部 tab 栏的断点由 ≤960 收到 ≤860。
+   为什么是 860：实测把导航放回顶栏后，561px 顶栏溢出 38px（明暗按钮被挤出屏幕）、
+   600px 搜索框只剩 26px、700px 111px、768px 179px——都不可接受；
+   而 861px 起搜索框 272px、900–960px 满 300px，顶栏零溢出。所以 861 是「放得下」的第一档。
+   效果：桌面窗口从宽处缩到 861px 的过程中导航一直留在顶栏，只有到手机/平板宽度才交给底栏。
+   兜底规则必须写成 .nav> 直接子元素——不然规则会跟着节点进 tab 栏，把 tab 一起藏掉。
+   ============================================================ */
+@media (max-width:860px){
   .nav>.nav-links,.nav>.nav-fav{display:none}
 }
 /* ============================================================
-   v1.1.3：≤960 的底部 tab 栏（#tabBar 是容器，导航与收藏由 JS 搬进来）
-   —— 断点与「顶栏导航隐藏」的断点严格一致：561–960 这一段顶栏 .nav-links 是 display:none，
-   于是「自测 / 更新」在这个区间（含 iPad 竖屏 768）原本**没有任何入口**（实测：唯一那两个
+   v1.1.3：≤860 的底部 tab 栏（#tabBar 是容器，导航与收藏由 JS 搬进来）
+   —— 断点与「顶栏导航隐藏」的断点严格一致：≤860 这一段顶栏 .nav-links 是 display:none，
+   于是「自测 / 更新」在这个区间原本**没有任何入口**（实测：唯一那两个
    链接宽度为 0）。把导航搬到底部后，全区间「词条 / 自测 / 更新 / 收藏」都是一次点击。
-   ≥961 顶栏放得下，tab 栏隐藏、节点搬回顶栏；安全区内边距用 env() 兜住 iPhone 横条。
+   ≥861 顶栏放得下，tab 栏隐藏、节点搬回顶栏。
+   （续 10：断点由 960 收到 860，理由见上面那段注释；861–960 顶栏现在也放得下导航。）
+   v1.1.3（续 9）安全区说明：下面 4 处 env(safe-area-inset-bottom) 是「将来若给 <meta name="viewport">
+   加上 viewport-fit=cover 时的保险」。本文件当前**没有** viewport-fit——iOS Safari 按默认 auto 会把
+   整个布局视口（含本 position:fixed 的 tab 栏）自动收进安全区，所以这些 env() 现在解析为 0px、
+   既不生效也不会被 iPhone 横条压住（现状是安全的）。要动 <meta viewport> 就回来一起复验这 4 处。
    ============================================================ */
 .tabbar{display:none}
-@media (max-width:960px){
+@media (max-width:860px){
   .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;align-items:center;gap:2px;
     padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
     background:var(--nav-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
@@ -1513,7 +1539,7 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   <button class="theme-btn" id="themeBtn" aria-label="颜色模式：跟随系统" title="颜色模式：跟随系统"></button>
 </header>
 
-<!-- v1.1.3（手机端顶栏重排）：≤560 的底部 tab 栏。
+<!-- v1.1.3（手机端顶栏重排）：≤860 的底部 tab 栏（断点同 CSS 的 max-width:860px；原注释写 ≤560，续 9 改 ≤960，续 10 随断点改为 ≤860）。
      由 syncHeaderTools() 把顶栏的「主导航 #navLinks + 收藏 #navFav」搬进来（只搬节点、不复制），
      顶栏因此空出一整行做搜索（110px → 60px）；回到更宽处再搬回顶栏。
      导航语义仍在里面的 <nav id="navLinks"> 上，这里只是个定位容器。 -->
@@ -1597,7 +1623,9 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
    → 所以：改站点请改 content/，不要改这里。
    ------------------------------------------------------------ */
 var SITE_META = {
-  brand: '鉴',                             // 顶栏 logo 文字（一字最佳，作为图形标识）
+  brand: '鉴',                             // 品牌字。v5（2026-09-27）起顶栏 logo 已图形化为内联 SVG 闪电（见 <body> 里的 .nav-logo），
+                                           // 本字段不再出现在顶栏，仅作 brandName 缺失时的兜底（引擎侧 brandName || brand）。
+                                           // 换 logo 请改 <body> 里那段 SVG 与 <head> 的 favicon，不是改这里。与 content/站点配置.js 同口径。
   brandName: '词条图鉴模板',               // 顶栏品牌名（悬停 logo 区时展开显示的全称）
   brandShort: '模板',                      // 顶栏品牌简称（logo 旁常驻；悬停展开全称。缺省回落 brandName）
   brandTagline: '看图懂术语',              // 品牌名下副标题（悬停展开态的第二行）
@@ -3485,9 +3513,12 @@ function renderPracticeView(){
     '</span></div>' +
     '<div class="flash-stage">' +
       '<div class="flash-card" id="fCard" tabindex="0" role="button" aria-label="' + ts('flashFlipAria', '闪卡：点击或按空格翻面') + '">' +
-        '<div class="flash-face"><div class="hint">' + ts('flashHint', '点击卡片翻面 · 先在脑子里回忆') + '</div>' +
+        '<div class="flash-face" id="fFaceFront"><div class="hint">' + ts('flashHint', '点击卡片翻面 · 先在脑子里回忆') + '</div>' +
           '<div class="term" id="fTerm"></div><div class="en" id="fEn"></div></div>' +   /* v1.1.3：正面去掉「来源卡：xxx」——它与正面大标题是同一个词条名，白占一行 */
-        '<div class="flash-face back"><div class="hint">' + ts('flashBackHint', '一句话答案') + '</div>' +
+        /* v1.1.3（续 9）：背面翻面前挂 aria-hidden="true"。翻面只是 CSS 的 rotateY + backface-visibility
+           （纯视觉），答案节点仍留在无障碍树里——实测翻面前读屏就能读到「一句话答案 + 正文原文」，
+           自测对读屏用户等于失效。开合由 syncFlipAria() 随 .flip 同步切换。 */
+        '<div class="flash-face back" id="fFaceBack" aria-hidden="true"><div class="hint">' + ts('flashBackHint', '一句话答案') + '</div>' +
           '<div class="line" id="fLine"></div><div class="src" id="fSrc2"></div></div>' +
       '</div>' +
       '<div class="flash-ctrl">' +
@@ -3538,6 +3569,7 @@ function practiceRenderQ(){
   el('fSrc2').textContent = srcTxt;   /* v1.1.3：正面那份已删（与正面大标题重复），背面保留 */
   el('fCard').classList.remove('flip');
   fFlip = false;
+  syncFlipAria();   /* v1.1.3（续 9）：换卡时把无障碍开合同步回「只暴露正面」 */
   el('fYes').disabled = true;
   el('fNo').disabled = true;
   /* 进度点：绿=会、红=没会（还在队尾等二刷）、蓝=当前（样张同款优先级） */
@@ -3547,15 +3579,27 @@ function practiceRenderQ(){
     d += '<i class="' + (st === true ? 'ok' : st === false ? 'ng' : (i === fCur ? 'cur' : '')) + '"></i>';
   }
   el('fDots').innerHTML = d;
-  /* v1.1.3：进度数字（与圆点同一份状态，给"还要几张"一个可读的答案） */
+  /* v1.1.3：进度数字（与圆点同一份状态，给"还要几张"一个可读的答案）
+     v1.1.3（续 9）修复：fState 是对象字面量（fState = {}，见 practiceStart），没有 .length——
+     原写法 fState.length 恒为 undefined，循环一次都不跑，okN 永远是 0，进度数字恒显示「已会 0 / N」。
+     改用与上面圆点循环、以及完成分支同一口径的 fPool.length。 */
   var okN = 0;
-  for (var q = 0; q < fState.length; q++){ if (fState[q] === true) okN++; }
+  for (var q = 0; q < fPool.length; q++){ if (fState[q] === true) okN++; }
   var fc = el('fCount');
   if (fc) fc.textContent = ts('practiceProgress', '已会 ' + okN + ' / ' + fPool.length, { ok: okN, n: fPool.length });
+}
+/* v1.1.3（续 9）：把「翻面」的视觉状态同步到无障碍树。
+   翻面本身只是 .flip 类 + CSS 3D 变换，读屏读不到翻没翻——不挂 aria-hidden 的话，
+   翻面前答案正文就已经在无障碍树里（实测 9 个非 ignored 节点）。 */
+function syncFlipAria(){
+  var front = el('fFaceFront'), back = el('fFaceBack');
+  if (front) front.setAttribute('aria-hidden', fFlip ? 'true' : 'false');
+  if (back) back.setAttribute('aria-hidden', fFlip ? 'false' : 'true');
 }
 function practiceFlip(){
   fFlip = !fFlip;
   el('fCard').classList.toggle('flip', fFlip);
+  syncFlipAria();
   if (fFlip){ el('fYes').disabled = false; el('fNo').disabled = false; }
 }
 function practiceJudge(ok){
@@ -3570,6 +3614,10 @@ function practiceJudge(ok){
       ts('practiceDone', '全部会了：' + okN + ' / ' + fPool.length + '（没会的卡都会再来一遍）', { n: okN, m: fPool.length }) +
       '</b><br><button type="button" class="judge yes" id="fAgain">' + ts('practiceAgain', '再来一轮') + '</button></div>';
     el('fAgain').addEventListener('click', function(){ practiceStart(fTopicId); });
+    /* v1.1.3（续 9）：完成分支不重绘卡面，得把进度数字一并收口——
+       否则最后一张答完时下面还停在上一次的值（如「已会 2 / 3」），与上面「全部会了：3 / 3」自相矛盾 */
+    var fcDone = el('fCount');
+    if (fcDone) fcDone.textContent = ts('practiceProgress', '已会 ' + okN + ' / ' + fPool.length, { ok: okN, n: fPool.length });
     return;
   }
   practiceRenderQ();
@@ -5181,6 +5229,10 @@ function bindEvents(){
     if (mqNarrow.addEventListener) mqNarrow.addEventListener('change', syncHeaderTools);
     else if (mqNarrow.addListener) mqNarrow.addListener(syncHeaderTools);   /* 老浏览器回退 */
   }
+  if (mqNav){
+    if (mqNav.addEventListener) mqNav.addEventListener('change', syncHeaderTools);
+    else if (mqNav.addListener) mqNav.addListener(syncHeaderTools);
+  }
   if (mqPhone){
     if (mqPhone.addEventListener) mqPhone.addEventListener('change', syncHeaderTools);
     else if (mqPhone.addListener) mqPhone.addListener(syncHeaderTools);
@@ -5204,6 +5256,10 @@ function bindEvents(){
    搬动只搬节点、不复制副本，也不重绑事件——监听器挂在节点上，跟着节点走，所以色板/帮助面板的
    开合、Esc 优先级链、点外部关闭等逻辑全部沿用原样。幂等：已在目标位置就不动。 */
 var mqNarrow = window.matchMedia ? window.matchMedia('(max-width: 960px)') : null;
+/* v1.1.3（续 10）：导航/收藏搬进底部 tab 栏的断点单独拆出来（≤860），
+   与「单行顶栏 + 侧栏进抽屉 + 快捷键收进抽屉」的 ≤960 解耦——
+   861–960 顶栏放得下导航（实测零溢出），不该跟着一起收走。 */
+var mqNav = window.matchMedia ? window.matchMedia('(max-width: 860px)') : null;
 var mqPhone = window.matchMedia ? window.matchMedia('(max-width: 560px)') : null;
 function syncHeaderTools(){
   var tools = el('drawerTools'), color = el('navColor'), kbd = el('kbdBtn'), theme = el('themeBtn'), lang = el('langSw');
@@ -5211,6 +5267,7 @@ function syncHeaderTools(){
   var nav = theme.parentNode;
   if (!nav) return;
   var narrow = !!(mqNarrow && mqNarrow.matches);
+  var navNarrow = !!(mqNav && mqNav.matches);
   var phone = !!(mqPhone && mqPhone.matches);
   /* v1.1.3：三个控件、两个断点分开判，且必须按 DOM 原序（语言 → 主题色 → 快捷键）依次处理——
      回顶栏一律 insertBefore(节点, 明暗按钮)，按原序插入才恢复得了原顺序。 */
@@ -5230,12 +5287,13 @@ function syncHeaderTools(){
     if (narrow) tools.appendChild(kbd);
     else nav.insertBefore(kbd, theme);
   }
-  /* v1.1.3（手机端顶栏重排）：≤560 再把「主导航 + 收藏」搬到底部 tab 栏——顶栏因此只剩一行。
-     回顶栏时按原 DOM 顺序落位：导航插在搜索框之前，收藏插在语言控件之前（语言此时已先归位）。 */
+      /* v1.1.3（手机端顶栏重排）：≤860 再把「主导航 + 收藏」搬到底部 tab 栏——顶栏因此只剩一行。
+      断点与 CSS 的 @media (max-width:860px) 一致（原注释写 ≤560，续 9 改为 ≤960，续 10 随断点改为 ≤860）。
+      回顶栏时按原 DOM 顺序落位：导航插在搜索框之前，收藏插在语言控件之前（语言此时已先归位）。 */
   var tabs = el('tabBar');
   var links = el('navLinks'), fav = el('navFav'), search = el('navSearch');
   if (tabs && links && fav && search){
-    if (narrow){
+    if (navNarrow){
       if (links.parentNode !== tabs) tabs.appendChild(links);
       if (fav.parentNode !== tabs) tabs.appendChild(fav);
     } else {

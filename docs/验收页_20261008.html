@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>验收页 · 词条图鉴模板 v1.1.3</title>
+<style>
+  :root{
+    --bg:#eef0f3; --card:#fff; --line:#dfe2e7; --text:#1d2129; --text2:#5b6472; --text3:#6b7280;
+    --brand:#3559d8; --good:#15803d; --warn:#b45309; --bad:#c0392b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.65 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:1560px;margin:0 auto;padding:20px 22px 60px}
+  h1{margin:0 0 6px;font-size:20px;font-weight:700;letter-spacing:-.01em}
+  h2{margin:30px 0 10px;font-size:16px;font-weight:700;padding-bottom:6px;border-bottom:2px solid var(--brand)}
+  h3{margin:18px 0 8px;font-size:14px;font-weight:700;color:var(--text)}
+  .lead{color:var(--text2);font-size:13.5px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;
+    box-shadow:0 1px 2px rgba(29,33,41,.05)}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin:8px 0}
+  th,td{border:1px solid var(--line);padding:5px 9px;text-align:left;vertical-align:top}
+  th{background:#f7f8fa;font-weight:600;white-space:nowrap}
+  td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .ok{color:var(--good);font-weight:600}
+  .pend{color:var(--warn);font-weight:600}
+  .no{color:var(--bad);font-weight:600}
+  code,kbd{font-family:var(--mono);font-size:12px;background:#f2f3f5;padding:1px 5px;border-radius:4px}
+  ul{margin:6px 0;padding-left:20px}li{margin:3px 0}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 14px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px 12px 0 0;border-bottom:0}
+  .toolbar .grp{display:flex;align-items:center;gap:6px}
+  .toolbar label{color:var(--text2);font-size:12.5px;white-space:nowrap}
+  input[type=range]{width:260px;accent-color:var(--brand)}
+  #wLabel{font-family:var(--mono);font-weight:700;min-width:62px;color:var(--brand)}
+  button{font:inherit;font-size:12.5px;padding:3px 10px;border:1px solid var(--line);border-radius:999px;
+    background:#fff;color:var(--text2);cursor:pointer}
+  button:hover{border-color:var(--brand);color:var(--brand)}
+  button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  .framehost{background:#c8c8c8;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;
+    padding:10px;display:flex;justify-content:center;overflow:auto}
+  iframe{border:0;display:block;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+  .hintbar{margin-top:8px;font-size:12.5px;color:var(--text2)}
+  .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;margin-right:6px}
+  .b-ok{background:#dcfce7;color:#15803d}
+  .b-pend{background:#fff3c2;color:#7a5a00}
+  .b-no{background:#ffece8;color:#c0392b}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:12.5px}
+  .kv dt{color:var(--text2)}
+  .kv dd{margin:0;font-family:var(--mono)}
+  .note{background:#fff9e8;border-left:3px solid var(--warn);padding:8px 12px;border-radius:0 8px 8px 0;
+    font-size:12.5px;margin:10px 0}
+  .note.info{background:#eef1fb;border-left-color:var(--brand)}
+  footer{margin-top:34px;color:var(--text3);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>验收页 · 词条图鉴模板 <code>v1.1.3</code></h1>
+  <div class="lead">
+    这一页把验收要做的事收在一处：<strong>下面嵌的就是引擎母版本身</strong>（可直接点、可切宽度 / 视图 / 中英），
+    再往下是整理自检、工程证据与上线清单。文件在 <code>docs/验收页_20261008.html</code>，与 <code>ACCEPTANCE.md</code> 配套。
+  </div>
+
+  <div class="card" style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+    <div><span class="badge b-ok">V1–V7 已通过</span>内容线 3 项 ＋ 工程线 4 项，全部有实测值</div>
+    <div><span class="badge b-pend">V8 待你判定</span>「看起来像一个成品站」—— 只有人眼能判</div>
+    <div><span class="badge b-ok">整理自检 6/6</span>回头对齐一轮的六条验收条件全过</div>
+  </div>
+
+  <h2>一、产品验收（V8）—— 请在这里看</h2>
+  <div class="lead">
+    下面嵌的是 <code>templates/词条图鉴模板-v5.html</code> 本体（不是截图，可以点）。
+    <strong>建议顺序</strong>：先把宽度从 1600 拖到 320，看有没有元素错位 / 折行 / 挤压 / 留白异常；
+    再切「自测」「更新」，最后切一次英文。
+  </div>
+
+  <div class="toolbar">
+    <div class="grp"><label for="w">视口宽度</label>
+      <input id="w" type="range" min="320" max="1600" step="1" value="1280"><span id="wLabel">1280 px</span></div>
+    <div class="grp"><label>快捷</label>
+      <button data-w="320">320</button><button data-w="375">375</button><button data-w="560">560</button>
+      <button data-w="768">768</button><button data-w="860">860</button><button data-w="900">900</button>
+      <button data-w="1024">1024</button><button data-w="1280">1280</button><button data-w="1600">1600</button></div>
+    <div class="grp"><label>视图</label>
+      <button data-view="" class="on">词条</button><button data-view="practice">自测</button>
+      <button data-view="changelog">更新</button><button data-view="term=doc-online">词条详情</button></div>
+    <div class="grp"><label>语言</label>
+      <button data-lang="zh" class="on">中文</button><button data-lang="en">English</button></div>
+    <div class="grp"><label>明暗</label>
+      <button data-theme="note">点嵌入页右上角 ◐ 切换（自动 / 浅色 / 深色）</button></div>
+    <div class="grp"><label>高度</label>
+      <button data-h="620">620</button><button data-h="820" class="on">820</button><button data-h="1000">1000</button></div>
+  </div>
+  <div class="framehost"><iframe id="f" title="引擎母版"></iframe></div>
+  <div class="hintbar" id="hint"></div>
+
+  <div class="note info">
+    <strong>宽度 861–960 是本轮改动区</strong>：导航应留在顶栏（≤860 才交给底部 tab 栏）。
+    <strong>≤960 时</strong>顶栏只剩「☰ · 品牌 · 搜索 · 明暗」，导航在窗口最底部的 tab 栏 —— 这是设计，不是丢失。
+  </div>
+
+  <h2>二、项目整理自检（回头对齐一轮 · 六条验收条件）</h2>
+  <table>
+    <tr><th>#</th><th>检查</th><th>判据</th><th>结果</th></tr>
+    <tr><td>1</td><td>形态要求的件在不在</td><td>PRO 版：<code>content/</code> ＋ <code>engineering/</code> ＋ <code>CONTRACT.md</code></td><td class="ok">✅ 三样都在</td></tr>
+    <tr><td>2</td><td>触发条件已满足却缺的目录</td><td>逐条对「产物长出来的顺序」表</td><td class="ok">✅ 已补 <code>notes/</code> <code>logs/</code>；其余逐条给了判定与理由</td></tr>
+    <tr><td>3</td><td>不该有的别硬建</td><td>没有产物的"按需"目录不许为"看着完整"新建</td><td class="ok">✅ 10 个目录实测均未建</td></tr>
+    <tr><td>4</td><td>落点与命名</td><td>根目录不放产物；骨架层目录英文小写、骨架文档英文大写</td><td class="ok">✅ 全合规</td></tr>
+    <tr><td>5</td><td>链接 ＋ 旧口径残留</td><td>链接逐个实测；旧关键词全库 grep 逐处判定</td><td class="ok">✅ 链接 17 条断裂 0；一处真残留已修</td></tr>
+    <tr><td>6</td><td><code>AGENTS.md</code> 三样</td><td>形态结论 ＋「产物长出来的顺序」表 ＋ 文档写入规范</td><td class="ok">✅ 实测都在</td></tr>
+  </table>
+
+  <div class="grid g3" style="margin-top:12px">
+    <div class="card">
+      <h3>骨架文档（本次补建 7 份）</h3>
+      <div class="kv">
+        <dt>AGENTS.md</dt><dd>规则总纲</dd>
+        <dt>PRD.md</dt><dd>需求基准</dd>
+        <dt>ROADMAP.md</dt><dd>关卡与上线清单</dd>
+        <dt>ACCEPTANCE.md</dt><dd>本页的文字版</dd>
+        <dt>MEMORY.md</dt><dd>决策索引</dd>
+        <dt>SOUL.md</dt><dd>协作准则</dd>
+        <dt>USER.md</dt><dd>用户画像</dd>
+      </div>
+    </div>
+    <div class="card">
+      <h3>目录落点（本次新增）</h3>
+      <div class="kv">
+        <dt>notes/</dt><dd>过程记录</dd>
+        <dt>logs/</dt><dd>过程产物（不进库）</dd>
+        <dt>.gitignore</dt><dd>补通用规则含 logs/</dd>
+      </div>
+      <div class="hintbar">过程产物已从项目外搬回 <code>logs/审计-20261008/</code>（86 文件 / 9.3MB）。</div>
+    </div>
+    <div class="card">
+      <h3>骨架偏离（与源提交 af88476）</h3>
+      <div class="kv">
+        <dt>一致</dt><dd>12 / 14</dd>
+        <dt>已偏离</dt><dd>.gitignore、母版</dd>
+      </div>
+      <div class="hintbar">实测 <code>git hash-object</code> 逐个核对。</div>
+    </div>
+  </div>
+
+  <h2>三、工程证据（改后实测）</h2>
+  <table>
+    <tr><th>项</th><th>命令 / 方法</th><th>实测</th><th>结论</th></tr>
+    <tr><td>V4 净室可跑通</td><td><code>node engineering/起步.mjs</code>（全新副本）</td><td class="num">=== 校验全部通过 === / EXIT 0</td><td class="ok">✅</td></tr>
+    <tr><td>V5 排版体检</td><td><code>node engineering/体检.mjs templates/词条图鉴模板-v5.html</code></td><td class="num">64/64（16 档 × 4 视图）/ EXIT 0</td><td class="ok">✅</td></tr>
+    <tr><td>V5 英文界面</td><td>同上 <code>--lang=en</code></td><td class="num">64/64 / EXIT 0</td><td class="ok">✅</td></tr>
+    <tr><td>V6 产物可复现</td><td>两次独立构建比 SHA256</td><td class="num">581E9BAE…（两次相同）</td><td class="ok">✅</td></tr>
+    <tr><td>V7 站点自检</td><td><code>#debug</code> / <code>#debug&amp;lang=en</code></td><td class="num">0 错误 · 0 警告</td><td class="ok">✅</td></tr>
+    <tr><td><strong>行为断言（新增）</strong></td><td><code>校验.mjs</code> ③-c：点一次卡片翻面 → 判「会了」→ 读进度数字</td><td class="num">改前判红「已会 0 / 1」／改后判过「已会 1 / 1」</td><td class="ok">✅ 红绿测试通过</td></tr>
+    <tr><td>首屏性能</td><td>CDP Performance</td><td class="num">FCP 172ms · 外部请求 0</td><td class="ok">✅</td></tr>
+    <tr><td>母版体积</td><td>—</td><td class="num">347,994 字符 / 5,872 行；gzip 141,850 B（35%）</td><td class="ok">✅</td></tr>
+  </table>
+  <div class="note">
+    <strong>新增的「行为断言」是本轮最要紧的工程改动</strong>：此前 <code>#debug</code>（查数据）、<code>校验.mjs</code>（查解析/语法/拼音/清单）、
+    <code>体检.mjs</code>（查排版）<strong>没有一条断言"行为"</strong> —— 一个进度数字恒为 0 的缺陷能同时骗过这三道闸门。现在它进不了门了。
+  </div>
+
+  <h2>四、已定处置（原待拍板 6 条 · 由执行方拍板，你判定合不合适）</h2>
+  <table>
+    <tr><th>#</th><th>项</th><th>处置</th><th>理由 / 代价</th></tr>
+    <tr><td>1</td><td>版本号与 tag</td><td class="ok">v1.1.2 与 v1.1.3 <strong>分开发布</strong>（两个 tag）</td><td>历史清楚；代价是写两段 Release 说明。<strong>执行时点：你验收通过后</strong></td></tr>
+    <tr><td>2</td><td><code>smoke.yml</code> 去留</td><td class="ok">保持未跟踪，列为上线清单第 1 项</td><td>它是有价值的 CI，不该被 gitignore 藏起来；入库卡在 workflow 权限（push 时一次性操作）。代价：<code>git status</code> 在此之前一直有 <code>?? .github/</code>（已登记）</td></tr>
+    <tr><td>3</td><td>README 配图</td><td class="ok">已重拍（1440×800 浅色列表视图）</td><td>原图实测像素为旧 <code>#86909c</code>，与当前界面不符；新图用母版自带示例数据，可复现。代价：图中顶栏品牌显示"模板"而非原来的"DEMO"</td></tr>
+    <tr><td>4</td><td>行为断言</td><td class="ok">已加（<code>校验.mjs</code> ③-c）</td><td>补上最大的结构性缺口；代价是校验多起一个 Chrome 进程</td></tr>
+    <tr><td>5</td><td>产物名三处硬编码</td><td class="pend">不改</td><td>三处同值、不挡首跑；改它会让一致数由 12 降到 9，削弱"骨架真取自运行中项目"的证据。<strong>你要收敛我就改</strong></td></tr>
+    <tr><td>6</td><td>示意图标签对比度</td><td class="pend">不改（你 20261008 已明确要求）</td><td>橙 2.41 / 绿 2.63 / 红 3.25、流程箭头 1.84；改法与代价已留档 CHANGELOG</td></tr>
+  </table>
+
+  <h2>五、上线清单（你验收通过后按序执行）</h2>
+  <table>
+    <tr><th>#</th><th>动作</th><th>谁执行</th></tr>
+    <tr><td>1</td><td><code>gh auth refresh -h github.com -s workflow</code> → <code>git add .github/</code></td><td class="pend">你（需凭据）</td></tr>
+    <tr><td>2</td><td>提交工作区（commit message 按仓库惯例）</td><td>我（授权后）</td></tr>
+    <tr><td>3</td><td>打 tag <code>v1.1.2</code>（<code>7f0f854</code>）与 <code>v1.1.3</code></td><td class="no">你（雷区：未授权不打 tag）</td></tr>
+    <tr><td>4</td><td><code>git push origin main --tags</code></td><td class="no">你（雷区：未授权不 push）</td></tr>
+    <tr><td>5</td><td>建两个 Release</td><td class="no">你</td></tr>
+    <tr><td>6</td><td>GitHub 仓库设置勾 <strong>Template repository</strong></td><td class="no">你</td></tr>
+    <tr><td>7</td><td>回填 <code>ACCEPTANCE.md</code> 的 V8 结论、<code>MEMORY.md</code>、把 G5 置 ✅</td><td>我</td></tr>
+  </table>
+
+  <h2>六、还需要你判定的两件事</h2>
+  <div class="grid g2">
+    <div class="card">
+      <h3>① 产品验收（V8）</h3>
+      <p style="font-size:13px;margin:6px 0">在上面的嵌入窗口里看：<strong>320–1600 各宽度</strong>（拖滑块）、
+      <strong>四个视图</strong>（词条 / 自测 / 更新 / 详情）、<strong>中英</strong>、<strong>明暗</strong>。
+      判据是"看起来像一个成品站 —— 没有元素错位、折行、挤压、留白异常"。</p>
+      <p style="font-size:13px;margin:6px 0;color:var(--text2)">这一条我替不了：自动化能证明"没有溢出/折行/截断"（64/64 × 2 语言），
+      但证明不了"像不像成品"。</p>
+    </div>
+    <div class="card">
+      <h3>② 上面第四节那 6 条处置</h3>
+      <p style="font-size:13px;margin:6px 0">逐条看"理由 / 代价"是否接受。特别是我拍的两条<strong>「不改」</strong>（第 5、6 条）——
+      它们都写了代价，你要改我就改。</p>
+      <p style="font-size:13px;margin:6px 0;color:var(--text2)">另外 <code>docs/派生与排错.md</code> 新增了<strong>接线点 6</strong>：
+      派生后要删掉或改写本仓库的 7 份管理文档 —— 因为 <code>Use this template</code> 会把它们一起带过去。</p>
+    </div>
+  </div>
+
+  <footer>
+    词条图鉴模板 v1.1.3 · 验收页生成于 2026-10-08 · 单文件零外部请求 · 与 <code>ACCEPTANCE.md</code> 配套
+  </footer>
+</div>
+
+<script>
+(function(){
+  var f = document.getElementById('f'), W = document.getElementById('w'), HL = document.getElementById('wLabel'),
+      hint = document.getElementById('hint');
+  var st = { w:1280, view:'', lang:'zh', h:820 };
+
+  function hash(){
+    var parts = [];
+    if (st.view === 'term=doc-online') parts.push('term=doc-online');
+    else if (st.view) parts.push(st.view);
+    else parts.push('topic=t1');
+    if (st.lang === 'en') parts.push('lang=en');
+    return '#' + parts.join('&');
+  }
+  function label(){
+    return '当前：<b>' + st.w + 'px</b> · ' + (st.view === '' ? '词条' : st.view === 'practice' ? '自测' :
+      st.view === 'changelog' ? '更新' : '词条详情') + ' · ' + (st.lang === 'zh' ? '中文' : 'English') +
+      '　（<b>861–960</b> 应看到导航留在顶栏；<b>≤860</b> 导航在底部 tab 栏）';
+  }
+  function size(){ HL.textContent = st.w + ' px'; f.style.width = st.w + 'px'; f.style.height = st.h + 'px'; }
+  function load(){ f.src = '../templates/词条图鉴模板-v5.html' + hash(); hint.innerHTML = label(); }
+  function mark(){
+    [].forEach.call(document.querySelectorAll('[data-w]'), function(b){ b.classList.toggle('on', +b.dataset.w === st.w); });
+    [].forEach.call(document.querySelectorAll('[data-view]'), function(b){ b.classList.toggle('on', b.dataset.view === st.view); });
+    [].forEach.call(document.querySelectorAll('[data-lang]'), function(b){ b.classList.toggle('on', b.dataset.lang === st.lang); });
+    [].forEach.call(document.querySelectorAll('[data-h]'), function(b){ b.classList.toggle('on', +b.dataset.h === st.h); });
+  }
+  W.addEventListener('input', function(){ st.w = +W.value; size(); mark(); hint.innerHTML = label(); });
+  [].forEach.call(document.querySelectorAll('[data-w]'), function(b){
+    b.addEventListener('click', function(){ st.w = +b.dataset.w; W.value = st.w; size(); mark(); hint.innerHTML = label(); });
+  });
+  [].forEach.call(document.querySelectorAll('[data-view]'), function(b){
+    b.addEventListener('click', function(){ st.view = b.dataset.view; load(); mark(); });
+  });
+  [].forEach.call(document.querySelectorAll('[data-lang]'), function(b){
+    b.addEventListener('click', function(){ st.lang = b.dataset.lang; load(); mark(); });
+  });
+  [].forEach.call(document.querySelectorAll('[data-h]'), function(b){
+    b.addEventListener('click', function(){ st.h = +b.dataset.h; size(); mark(); });
+  });
+  /* 明暗不在父页做假预览 —— 请点嵌入页右上角的 ◐ 按钮（那是引擎的三态切换，自动/浅色/深色） */
+  [].forEach.call(document.querySelectorAll('[data-theme]'), function(b){
+    b.addEventListener('click', function(){
+      hint.innerHTML = '<b>深色请点嵌入页面右上角的 ◐ 按钮</b>（引擎自带三态：跟随系统 / 浅色 / 深色）。' +
+        '父页是跨源的，改不了嵌入页的 localStorage，所以这里不做假预览。' + '　' + label();
+    });
+  });
+  size(); load(); mark();
+})();
+</script>
+</body>
+</html>

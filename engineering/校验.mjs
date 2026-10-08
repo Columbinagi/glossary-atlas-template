@@ -312,6 +312,50 @@ if (terms){
   }
 }
 
+/* ③-c 行为断言（2026-10-08 续 11 新增）：自测页的「已会 N / N」进度数字必须随判定推进。
+   为什么需要它：本文件其余项查解析 / 语法 / 拼音 / 清单，#debug 查数据，体检.mjs 查排版 ——
+   **没有一条断言"行为"**。2026-10-08 修掉的那个「进度数字恒为 0」缺陷正是这样同时骗过三道闸门的：
+   #debug 报 0 错误 0 警告、校验全部通过、体检中英各 64/64，而页面上圆点已是绿·蓝·灰、数字还是 0 / N。
+   做法：把产物复制一份注入探针（点一次卡片翻面 → 判「会了」→ 读 #fCount），用 --dump-dom 取回结果。
+   判据：**第一次判定后，已会数必须等于 1**（分母随卡数变化，故只断言分子与"分母 ≥ 1"）。 */
+function headlessPracticeProgress(){
+  const probe = '<script>(function(){' +
+    'function step(){' +
+    'var card=document.getElementById("fCard");' +
+    'if(!card){document.title="PRACTICE_PROBE:no-card";return;}' +
+    'card.click();' +
+    'var yes=document.getElementById("fYes");' +
+    'if(!yes){document.title="PRACTICE_PROBE:no-yes";return;}' +
+    'yes.click();' +
+    'var c=document.getElementById("fCount");' +
+    'document.title="PRACTICE_PROBE:"+(c?c.textContent.trim():"(no-fCount)");}' +
+    'if(document.readyState==="complete")setTimeout(step,400);' +
+    'else window.addEventListener("load",function(){setTimeout(step,400);});' +
+    '})();<\/script>';
+  let html;
+  try { html = fs.readFileSync(OUT, 'utf8'); } catch (e){ return '(读不到产物)'; }
+  const tmp = path.join(os.tmpdir(), 'jc-practice-' + process.pid + '-' + Date.now() + '.html');
+  fs.writeFileSync(tmp, html.replace('</body>', probe + '</body>'), 'utf8');
+  const r = spawnSync(CHROME, ['--headless=new', '--disable-gpu', '--virtual-time-budget=6000', '--dump-dom',
+    pathToFileURL(tmp).href + '#practice'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const dom = r.stdout || '';
+  try { fs.unlinkSync(tmp); } catch (e){}
+  if (r.error && dom.length === 0) return null;
+  const m = dom.match(/<title>PRACTICE_PROBE:([^<]*)<\/title>/);
+  return m ? m[1] : '(未抓到探针)';
+}
+{
+  const got = headlessPracticeProgress();
+  if (got === null){
+    console.log('⏸ 行为断言（自测进度数字）：本进程无法启动 Chrome，此项需外部验证');
+    manual++;
+  } else {
+    const m = got.match(/已会\s*(\d+)\s*\/\s*(\d+)/);
+    if (m && m[1] === '1' && Number(m[2]) >= 1) console.log('✓ 行为断言：判 1 张「会了」后进度数字 = ' + got);
+    else { console.log('✗ 行为断言：判 1 张「会了」后进度数字应为「已会 1 / N（N≥1）」，实测「' + got + '」'); fail++; }
+  }
+}
+
 if (fail === 0 && manual === 0) console.log('=== 校验全部通过 ===');
 else if (fail === 0) console.log('=== 校验通过；另有 ' + manual + ' 项无法在本进程启动 Chrome，须按上方命令外部验证并核对「0 错误 · 0 警告」 ===');
 else console.log('=== ' + fail + ' 项未过 ===');

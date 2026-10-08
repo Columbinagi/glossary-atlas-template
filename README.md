@@ -123,7 +123,7 @@ git hash-object templates/词条图鉴模板-v5.html
 
 - **当前版本**：`v1.1.3` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
-- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **12 个仍与 `af88476` 逐字节一致**（SHA256 全等，2026-10-08 独立复核）；**2 个已偏离**——`templates/词条图鉴模板-v5.html`（自 v1.1.2 起，累计 539 增 / 91 删、70 个 hunk）与 `.gitignore`（2026-10-08 补通用规则，含 `logs/`；原因是本项目缺过程产物落点）。逐条来历与实测见 [CHANGELOG.md](CHANGELOG.md)——此处不再枚举，免得枚举落后于实现。
+- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **11 个仍与 `af88476` 逐字节一致**（SHA256 全等，2026-10-08 独立复核）；**3 个已偏离**——`templates/词条图鉴模板-v5.html`（自 v1.1.2 起，累计 539 增 / 91 删、70 个 hunk）、`.gitignore`（2026-10-08 补通用规则，含 `logs/`；原因是本项目缺过程产物落点）、`engineering/校验.mjs`（2026-10-08 新增 ③-c 行为断言闸门）。逐条来历与实测见 [CHANGELOG.md](CHANGELOG.md)——此处不再枚举，免得枚举落后于实现。
   - **「14 个」的口径**：指 `.github/workflows/smoke.yml` 里那份骨架清单（14 个文件，**不含** `README.md` / `LICENSE` / `CHANGELOG.md`，也不含 2026-10-08 补建的 `AGENTS.md` `PRD.md` 等 7 份项目文档——那 7 份是**本项目自己怎么干活**的规矩，派生时不用搬）。若按「与 `af88476` 同路径」去数会得到 15 个文件：多出来的那份 `README.md` 在源提交里是源项目自己的 README，本仓库的是重写版，**从不曾逐字节一致**，故不在其列。
   - **未含**该项目任何内容数据、进度文档与产物；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
 - **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.3（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。

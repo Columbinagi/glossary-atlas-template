@@ -11,7 +11,11 @@
 
 ## 2. 当前状态（最新在上）
 
-- **20261008 · CI 入库并首跑成功 —— 上线 100% 收尾**：`.github/workflows/smoke.yml` 已入库（提交 `f84ad4a`），**CI 首跑 success**（run `37759325869`，15s，三步全绿：起步建骨架→拼合→校验 / 确认产物产出 / 确认骨架 14 文件仍在）。
+- **20261008 · 上线后自查：分叉复核通过 ＋ 修正一处自己写错的数字**（CHANGELOG 续 13）
+  - **分叉复核（反向纪律）**：源项目当前 HEAD `c3b8ea3`，自 `af88476` 后**只改过一行** —— 母版的 `var PYI` 拼音表。**实测已完全对齐**（两边 PYI 行同为 11,932 字符、SHA256 同为 `40277E05…`、1,490 键，5 个新字都在）→ **无分叉，不需回搬**。
+  - **修正**：续 12 给 `校验.mjs` 加行为断言后，它也不再与 `af88476` 一致，但我忘了同步口径 —— 三处仍写「12 个一致 / 2 个偏离」。**实测实为「11 个一致 / 3 个偏离」**（母版、`.gitignore`、`校验.mjs`）。已改 `README.md` / `docs/派生与排错.md` / `PRD.md` §八；CHANGELOG 里的历史数字按只增不改保留。
+  - **本机 git 坏配置已修**：`git config --local --unset http.proxy`（那条代理对 `github.com` 100% 不通）。GitHub 走直连，实测约 3/5 成功率，重试即可。
+- **20261008 · CI 入库并首跑成功 —— 上线 100% 收尾**：`.github/workflows/smoke.yml` 已入库（提交 `f84ad4a`），**CI 已跑 2 次、2 次 success**（run `37759325869` / `37759777290`，各 15s / 14s，三步全绿：起步建骨架→拼合→校验 / 确认产物产出 / 确认骨架 14 文件仍在）。
   - **gh 账号已修正**：此前 gh 配置里存着旧账号名 `NahidaTribbie`（账号已改名为 `Columbinagi`），导致 `gh auth refresh` 报"收到的是 Columbinagi 的凭据，你是不是用错账号了"、`workflow` 权限一直拿不到。20261008 重新登录后配置为 `Columbinagi`，token scopes 含 **`workflow`**（API `X-Oauth-Scopes` 实测确认），旧账号条目已 `gh auth logout` 清理。
   - **本机网络：根因与最终解法（值得记住）** —— `fcclient`（肥猫云_Lite，`D:\Program\fcclient\`，混合端口 `127.0.0.1:7892`）的**节点到 `github.com` 这一族域名不通**：实测经代理 Google / Cloudflare / Wikipedia / `raw.githubusercontent.com` **全通**，只有 `github.com` / `api.github.com` / `gist.github.com` **超时**；**切全局模式也无效**（所以不是规则问题，是节点上游对这些域名的路由问题）。**解法：GitHub 不走代理、走直连**（直连实测 4/4 HTTP 200）。已做：关闭系统代理 ＋ 给 `ProxyOverride` 追加 `github.com;*.github.com;githubusercontent.com;*.githubusercontent.com` 绕过规则。
   - **推送链路的坑**：`git push` 走 github.com 且**时通时不通**（曾被 `Recv failure: Connection was reset`，6 次全败）。最终 CI 文件是**用 `gh api -X PUT .../contents/...` 经 `api.github.com` 创建的**（那条一直稳定 200）。**以后推不上去时可复用这条路。**

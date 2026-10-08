@@ -34,7 +34,7 @@
 
 **已全部完成，无任何卡点。** 20261008：`main` 推送 ＋ tag `v1.1.2`/`v1.1.3` ＋ 两个 Release（v1.1.3 为 Latest）＋ `is_template: true` ＋ **CI 入库并首跑 success**（run `37759325869`，15s，三步全绿）。
 
-**v1.1.4 已发布（2026-10-09）** —— 把 v1.1.3 之后的五批续改收成一个正式版本：
+**v1.1.4 已发布（2026-10-09）** —— 提交 `0bd4f12`（14 文件）／tag `v1.1.4`／[Release v1.1.4（Latest）](https://github.com/Columbinagi/glossary-atlas-template/releases/tag/v1.1.4)／**CI 首跑 success**（run `37808985327`，21s）。把 v1.1.3 之后的五批续改收成一个正式版本：
 
 - **续 14**：修「详情页下滚后返回、卡片从画外飞回原位」（`morphSourceOnScreen` 守卫）＋ ③-d（V10）。
 - **续 15**：修页面级状态残留（F2）与放大态跨导航残留（F4）＋ ③-e / ③-f（V11）；补做窄屏/触屏复跑。

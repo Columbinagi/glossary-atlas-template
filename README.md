@@ -1,4 +1,4 @@
-# 词条图鉴模板 glossary-atlas-template
+﻿# 词条图鉴模板 glossary-atlas-template
 
 **单文件、零外部请求的图鉴引擎 + 内容 / 工程双线骨架。** 拿它派生一个新主题的「术语图鉴」：内容线只写 Markdown，工程线一条命令出成品。
 
@@ -115,15 +115,15 @@ git hash-object templates/词条图鉴模板-v5.html
 ## 环境要求
 
 - **Node.js**：唯一硬依赖，零第三方包（没有 `package.json`，不需要 `npm install`）。
-- **无头 Chrome（可选）**：`校验.mjs:18` 写死了 Chrome 默认安装路径，用来自检站点的 `#debug` 与搜索语料。没有它（或装在别处）时这几项会打印「⏸ 需外部验证」并单独计数，**不计入失败**；要自动化就把这行改成你机器上的真实路径。
+- **无头 Chrome（可选）**：`校验.mjs:18` 写死了 Chrome 默认安装路径，用来自检站点的 `#debug`、搜索语料与**七条行为断言**（③-c 自测进度 / ③-d 返回列表 morph / ③-e 页面级状态残留 / ③-f 放大态残留 / ③-g 返回来源 / ③-h 跨词条过渡 / ③-i 分类高亮跟随）。没有它（或装在别处）时这几项会打印「⏸ 需外部验证」并单独计数，**不计入失败**；要自动化就把这行改成你机器上的真实路径。
   ⚠️ 由此带来一个判定盲区：**退出码 0 并不总等于站点自检真的过了**——在没装 Chrome 的机器上，同一份代码会得到相反的通过口径（独立测试实测）。
 - 浏览器：任意现代浏览器。站点是单文件，双击 `dist/<产物名>.html` 即可打开。
 
 ## 版本与来源
 
-- **当前版本**：`v1.1.3` —— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **当前版本**：`v1.1.4`（2026-10-09）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
-- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **11 个仍与 `af88476` 逐字节一致**（SHA256 全等，2026-10-08 独立复核）；**3 个已偏离**——`templates/词条图鉴模板-v5.html`（自 v1.1.2 起，累计 539 增 / 91 删、70 个 hunk）、`.gitignore`（2026-10-08 补通用规则，含 `logs/`；原因是本项目缺过程产物落点）、`engineering/校验.mjs`（2026-10-08 新增 ③-c 行为断言闸门）。逐条来历与实测见 [CHANGELOG.md](CHANGELOG.md)——此处不再枚举，免得枚举落后于实现。
+- **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **11 个仍与 `af88476` 逐字节一致**（SHA256 全等，2026-10-08 独立复核）；**3 个已偏离**——`templates/词条图鉴模板-v5.html`（自 v1.1.2 起；2026-10-09 续 18 实测累计 **+694 / −118、62 个 hunk**，口径与旧读数的差异见 [CHANGELOG.md](CHANGELOG.md) 续 14）、`.gitignore`（2026-10-08 补通用规则，含 `logs/`；原因是本项目缺过程产物落点）、`engineering/校验.mjs`（2026-10-08 起新增 ③-c ～ ③-i **七条**行为断言闸门；来历见 CHANGELOG 续 12 / 续 14 / 续 15 / 续 16 / 续 17 / 续 18）。逐条来历与实测见 [CHANGELOG.md](CHANGELOG.md)——此处不再枚举，免得枚举落后于实现。
   - **「14 个」的口径**：指 `.github/workflows/smoke.yml` 里那份骨架清单（14 个文件，**不含** `README.md` / `LICENSE` / `CHANGELOG.md`，也不含 2026-10-08 补建的 `AGENTS.md` `PRD.md` 等 7 份项目文档——那 7 份是**本项目自己怎么干活**的规矩，派生时不用搬）。若按「与 `af88476` 同路径」去数会得到 15 个文件：多出来的那份 `README.md` 在源提交里是源项目自己的 README，本仓库的是重写版，**从不曾逐字节一致**，故不在其列。
   - **未含**该项目任何内容数据、进度文档与产物；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
 - **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.3（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。

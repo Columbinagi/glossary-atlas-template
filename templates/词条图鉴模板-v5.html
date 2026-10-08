@@ -3050,8 +3050,23 @@ function syncCatActive(){
   if (!btns.length) return;
   var secs = el('topicView').querySelectorAll('[data-catsec]');
   var cur = null;
-  for (var i = 0; i < secs.length; i++){
-    if (secs[i].getBoundingClientRect().top <= 88) cur = secs[i].getAttribute('data-catsec');
+  /* ⚠️ 必须先判空：更新日志 / 自测 / 对比 / 空收藏这些视图里**没有** [data-catsec]，
+     若对 secs[0] 取 getComputedStyle 会抛异常 —— 而 paint() 里的异常会被
+     startViewTransition 的 tr.ready 静默吞掉，整个 paint 半途而废（实测：更新日志视图下
+     lastRenderedHash 不再更新，连带 F3「返回来源」失效）。下面所有阈值计算都放在 length 判断里面。 */
+  if (secs.length){
+    /* v5（2026-10-08 续 18 修复·手机端「点第 4 个主题，背景色却亮在第 3 个」）：
+       阈值原先**写死 88px**，而分节的 `scroll-margin-top` 恰好也是 `calc(var(--nav-h) + 28px)` = 88px
+       —— `scrollIntoView({block:'start'})` 会把分节**精确停在 88px**，于是 `top <= 88` 的成败由**亚像素**决定：
+       手机上（DSF 3）落在 88.7 就判 false，高亮便停在**上一个**分节（375×667 实测：点第 2 个分类、亮第 1 个）。
+       现改为：阈值从元素自身的 `scroll-margin-top` 读出来再放宽 8px —— 与 CSS 同源，不再各自写一个 88。
+       余量 8px 不影响手感：分节高度都是数百像素，不会提前点亮下一节。 */
+    var margin = parseFloat(getComputedStyle(secs[0]).scrollMarginTop);
+    if (!(margin > 0)) margin = 88;
+    var threshold = margin + 8;
+    for (var i = 0; i < secs.length; i++){
+      if (secs[i].getBoundingClientRect().top <= threshold) cur = secs[i].getAttribute('data-catsec');
+    }
   }
   for (var b = 0; b < btns.length; b++){
     if (cur && btns[b].getAttribute('data-catgoto') === 'cat-' + cur) btns[b].classList.add('on');
@@ -4491,6 +4506,19 @@ function parseHash(){
   if (m){
     state.term = m[1];
     state.favOnly = false;
+    /* v5（2026-10-08 续 15 修复·页面级状态残留）：term 分支在下面三个页面级态的重置**之前**就 return 了，
+       于是「从更新日志点进词条」会把 state.changelog 带进详情页，实测两处后果：
+         ① paint() 给 body 挂 is-changelog → 侧栏被整页隐藏（208px → 0）、主区居中，同一个详情页两套 chrome；
+         ② hashOf() 里 changelog 的优先级高于 term → 在该详情页切语言（走 updateHash）会落到
+            #changelog&lang=en，**正在读的词条被带走**。
+       goTerm() 本来就清了这三个，这里补齐同类入口 —— 两个入口（JS 跳转 / 原生 #term= 链接）行为一致。 */
+    state.changelog = false;
+    state.practice = false;
+    state.compare = null;
+    /* v5（2026-10-08 续 16 修复·F3-lite）：记下来源视图，供「← 返回」用（见 backFromTerm）。
+       只在来源**不是另一个词条**时记 —— 从词条点互链跳到词条时「返回」仍按原口径回列表，
+       不把互链走成一串「返回上一个词条」（那件事交给浏览器后退键）。 */
+    returnHash = (lastRenderedHash && lastRenderedHash.indexOf('#term=') !== 0) ? lastRenderedHash : '';
     var mt = termById(m[1]);
     if (mt) state.topic = topicOfTerm(mt);
     return;
@@ -4531,6 +4559,21 @@ var savedCardId = null;
 var savedScrollY = 0;
 /* v3：返回列表后把焦点还给刚看过的那张卡片（仅 ← 返回 / Esc 触发） */
 var returnFocusId = null;
+/* v5（2026-10-08 续 16 修复·F3-lite）：「← 返回」的目标 = **记下来的来源**，而不是当场按 state 推导。
+   原实现一律 `state.term=null; updateHash()`，目标由 hashOf() 推导 → 实测收藏视图返回落到 #topic=t1、
+   更新日志返回落到词条所属主题、搜索返回的主题被改写（而浏览器后退键三条都对，因为那个走历史）。
+   lastRenderedHash 记「上一次真正渲染出来的 hash」；进词条时若来源不是另一个词条，就把它记进 returnHash。 */
+var lastRenderedHash = '';
+var returnHash = '';
+/* 返回列表：优先回记下来的来源；没记到（如直接打开分享链接）就退回原口径 —— 回当前主题列表 */
+function backFromTerm(){
+  returnFocusId = state.term;            /* v3：返回后焦点还给刚看过的卡片 / v5：Esc 同样恢复焦点 */
+  state.term = null;
+  var rh = returnHash;
+  returnHash = '';
+  if (rh && location.hash !== rh){ location.hash = rh; }
+  else updateHash();
+}
 
 /* ---------- v4.1：视图过渡的脚手架（动画定义在 CSS 的「视图过渡」一节） ---------- */
 var vtDir = '';        /* 本次切换方向：open / next / prev / ''（回列表走默认淡入） */
@@ -4567,6 +4610,21 @@ function vtClearNames(){
 function topicIndexOf(id){
   var list = siblingsOf(termById(id));
   return siblingIndexOf(id, list);
+}
+/* v5（2026-10-08 修复·使用者报障「返回时卡片从屏幕外很高的地方一下弹回原位」）：做 morph 前的前置检查。
+   根因：morph 的起点就是 #detail-hero **当时那一帧**的视口方框——详情页一往下滚，它就被顶到视口上方，
+   而终点是恢复滚动后列表里那张卡片（y≈294），于是位移 = 你滚过的距离。实测（1280×800 / Chrome 154）：
+     下滚 0px    → 起点 y=231、位移 63px（设计值，正常）
+     下滚 600px  → 起点 y=−369、位移 663px
+     下滚 1800px → 起点 y=−1569、位移 1863px，450ms 内播完（≈130ms 内就跨完）
+   最后那条正是所报的「从很高的地方一下子弹回来」。morph 的语义是「你刚才看着的那个标题 → 你回到的
+   那张卡片」；hero 已被滚出视口，这个语义就不成立。判据与 across 分支那条「滚过 240px 就不播滑动」
+   （见 renderApp 里 vtSkip 处）同一口径：**起点必须可信**。不满足时不挂 morph 名，退化为页面级淡入
+   ——与「morph 找不到目标自动退化为淡入」是同一条既有退化路径。 */
+function morphSourceOnScreen(){
+  var h = el('detail-hero');
+  if (!h) return false;                 /* 404 详情页没有 hero：同样不发生 morph */
+  return h.getBoundingClientRect().top >= 0;
 }
 
 /* 真正的渲染：所有 DOM 写入都在这里，过渡回调只负责挑时机调用它 */
@@ -4647,6 +4705,11 @@ function paint(){
     savedScrollY = 0;
   }
   closeDrawer();
+  /* v5（2026-10-08 续 15 修复·放大态残留）：放大示意图是「全屏模态 + body{overflow:hidden}」，
+     而 closeZoom() 原先只挂在 Esc / 关闭按钮 / 点遮罩上 —— 放大态按**浏览器后退**时视图已经切走，
+     模态却不关、滚动锁也不解，实测用户滚轮滚不动（页面被锁死）。paint() 是所有视图重渲的唯一落点，
+     导航时在这里统一收场（未打开时 closeZoom() 是空操作）。 */
+  closeZoom();
   /* v5（2026-09-29 修复）：同视图重渲（语言切换）——恢复切换前的滚动位置。
      放在最后执行，覆盖各分支里的 scrollTo(0,0)；同一任务内后一次 scrollTo 生效，不闪屏。 */
   if (preserveScroll >= 0){
@@ -4655,11 +4718,15 @@ function paint(){
     window.scrollTo(0, psY);
   }
   vtPrimed = true;      /* 首屏已落地，之后的切换才有必要做过渡 */
+  /* v5（2026-10-08 续 16 修复·F3-lite）：记下「这一屏是什么视图」，供下次进词条时当返回目标 */
+  lastRenderedHash = location.hash;
 }
 
 /* v4.1：带视图过渡的渲染入口。三个场景与 CSS 的 data-dir 关键帧一一对应：
      列表 → 详情   data-dir=open      卡片 morph 成 #detail-hero，正文从下方浮起
      详情 → 列表   data-dir=''        #detail-hero morph 回那张卡片
+                                      （hero 已被滚出视口时不做 morph、退化为淡入——见 morphSourceOnScreen，
+                                        否则 morph 起点会在视口外很远处，卡片看起来从画外飞回来）
      详情 → 详情   data-dir=next|prev 只有正文左右滑 */
 function renderApp(){
   var wasTerm = lastViewWasTerm;
@@ -4677,7 +4744,7 @@ function renderApp(){
     dir = 'open';
     aSel = state.term ? '[data-card="' + state.term + '"]' : null;
     aName = 'morph'; bSel = '#detail-hero'; bName = 'morph';
-  } else if (toList && savedCardId){
+  } else if (toList && savedCardId && morphSourceOnScreen()){
     dir = '';
     aSel = '#detail-hero'; aName = 'morph';
     bSel = '[data-card="' + savedCardId + '"]'; bName = 'morph';
@@ -4691,12 +4758,10 @@ function renderApp(){
   }
   vtDir = '';
 
-  /* v5 修复（2026-09-20）：滚离顶部后跨词条切换不播滑动过渡。
-     根因：paint() 会渲染新词条并滚回顶部，而 View Transition 的旧快照是"你当前在页面中部
-     看到的画面"、新快照是"顶部画面"——两张快照的垂直差被一并补间，叠加原本设计的水平滑动，
-     就成了所报的「斜向」过渡。页面顶部附近切换时两张快照位置一致，动画正常，故保留。
-     阈值取半屏（240px）：滚过它基本意味着正在长文里读，此时要的是"直接到新词条"。 */
-  if (across && (window.scrollY || window.pageYOffset || 0) > 240) vtSkip = true;
+  /* ⚠️ 已废止（2026-10-08 续 17）：原「across 且 scrollY > 240 → vtSkip 直切」的守卫已在下方移除。
+     它只是把斜向过渡藏起来，代价是滚过 240px 就**完全没有翻页动画**（使用者明确要求动画保留）。
+     现行为：照参考站，在开过渡**之前**先把窗口滚回顶部 —— 两张快照垂直对齐，斜向消失、动画保留
+     （见下面 `if (across && scrollY > 0) window.scrollTo(0, 0)` 与 paint() 里的兜底 scrollTo(0,0)）。 */
 
   if (vtSkip){ vtSkip = false; paint(); return; }   /* 跳跃式导航（如点分类目录）不做过渡 */
   /* 注意：**不把 vtBusy 当直切条件**。过渡没跑完就再点，若直切 DOM，
@@ -4704,6 +4769,15 @@ function renderApp(){
      正确做法是照常开新过渡：规范里新的 startViewTransition 会自动 skip 掉上一个，
      方向取最新一次点击的，data-dir 也跟着最新。 */
   if (!vtPrimed || !vtSupported()){ paint(); return; }
+
+  /* v5（2026-10-08 续 17 修复·跨词条过渡的斜向位移）：**开过渡之前**先把窗口滚回顶部 —— 照参考站的做法。
+     参考站实测（https://vibe-hub.org/ ，见 notes/20261008_参考站对比实测.md）：点「下一个条目」的时序是
+       scrollTo({top:0, behavior:'instant'})  →  4ms 后 startViewTransition()  →  回调里再 scrollTo(0,0)
+     所以它的旧快照就是从顶部拍的，两种快照垂直对齐：detail-body 组在整段过渡里 y 恒为 149（垂直位移 0px），
+     只剩左右滑动。我们原先是在回调里（= 快照之后）才 scrollTo(0,0)，于是旧快照留在"你阅读的位置"，
+     组要额外补间「你滚过的距离」——实测滚 100/200/239px 就有 100/200/239px 的斜向位移（2026-09-20 报障）。
+     归零与快照在同一帧完成，用户看不到中间态；paint() 里的 scrollTo(0,0) 保留作兜底。 */
+  if (across && (window.scrollY || window.pageYOffset || 0) > 0) window.scrollTo(0, 0);
 
   /* 开新过渡前先清一遍名字：上一次过渡若被 skip 掉，它的 done() 不会执行，
      残留的同名元素会被这次过渡当成额外参与元素，出现莫名的额外动画。 */
@@ -4876,11 +4950,9 @@ function bindEvents(){
         updateHash();
         return;
       }
-      if (ds.back){                      /* 返回列表 */
+      if (ds.back){                      /* 返回列表 —— v5（续 16）：回到记下来的来源视图，见 backFromTerm() */
         ev.stopPropagation();
-        returnFocusId = state.term;      /* v3：返回后焦点还给刚看过的卡片 */
-        state.term = null;
-        updateHash();
+        backFromTerm();
         return;
       }
       if (ds.copymd){                    /* 复制为 Markdown */
@@ -5041,9 +5113,7 @@ function bindEvents(){
       if (state.practice){ state.practice = false; updateHash(); return; }
       if (state.compare){ state.compare = null; updateHash(); return; }
       if (state.term){
-        returnFocusId = state.term;      /* v3：Esc 返回同样恢复焦点 */
-        state.term = null;
-        updateHash();
+        backFromTerm();                  /* v5（续 16）：与「← 返回」同一条路径（含回到来源视图） */
       }
       return;
     }

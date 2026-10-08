@@ -1,0 +1,40 @@
+name: smoke
+
+# 每次推送/PR 自动验证这个仓库的核心承诺：
+# 「一个只拿到链接的人，clone 下来跑一条命令就能得到能跑的站点」
+# 说明：engineering/校验.mjs:18 写死了 Windows 下的 Chrome 路径，
+# 在 ubuntu runner 上那几项会降级为「⏸ 需外部验证」并单独计数、不计入失败，
+# 所以本测试验证的是「骨架完整 + 拼合可产出 + 校验无硬错误」，不是浏览器自检。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 起步（建骨架 → 拼合 → 校验）
+        run: node engineering/起步.mjs
+
+      - name: 确认站点文件已产出
+        run: test -n "$(ls dist/*.html)"
+
+      - name: 确认骨架 14 个文件仍在（防误删）
+        run: |
+          for f in CONTRACT.md .gitattributes .gitignore \
+                   content/站点配置.js content/内容规范.md \
+                   engineering/lib-md.mjs engineering/拼合.mjs engineering/收录草稿.mjs \
+                   engineering/校验.mjs engineering/重排编号.mjs engineering/预览服务.mjs \
+                   skills/term-card-draft/SKILL.md skills/term-card-publish/SKILL.md \
+                   templates/词条图鉴模板-v5.html ; do
+            test -f "$f" || { echo "缺少骨架文件: $f"; exit 1; }
+          done
+          echo "骨架 14 个文件齐全"

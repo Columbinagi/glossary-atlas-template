@@ -60,14 +60,15 @@
 │   └── term-card-publish/SKILL.md
 ├── docs/            手写即交付的文档成品
 │   ├── 派生与排错.md
-│   └── img/         README 配图（**落点例外，见 §九 第 3 条**）
+│   ├── img/         README 配图（**落点例外，见 §九 第 3 条**）
+│   └── plans/       一次性实施计划（带日期；2026-10-09 首份：v1.1.5 清尾任务书）
 ├── notes/           过程记录：任务结论（可续更）＋ 分析论证（只增不改）
 └── logs/            临时文件与运行记录（**不进版本库**；过程产物的约定落点）
     └── 审计-20261008/  一次独立审计的对比图与三方案交互对比页
 ```
 
 > **根目录只住骨架文档、`README.md`（按需门面）与 `.gitignore`，不放任何产物** —— 产物按 §五 落位。
-> **未列出的目录（`dist/` `release/` `assets/` `models/` `archive/` `src/` `tests/` `scripts/` `docs/plans/` `docs/references/`）当前不存在**，等触发条件满足才建（见 §三）。
+> **未列出的目录（`dist/` `release/` `assets/` `models/` `archive/` `src/` `tests/` `scripts/` `docs/references/`）当前不存在**，等触发条件满足才建（见 §三）。
 >
 > **骨架目录里面怎么分**（**方向，不是硬规则**）：一层一个维度 / 同类同处 / 能平铺就不分层 / 深度 ≤ 2–3 层 /
 > 不留 `misc` `其他` `temp` 这类兜底目录；`dist/` 里别手工加层级、`archive/` 保持原样。
@@ -97,7 +98,7 @@
 | `templates/` `skills/` | 目录 | 出现第一份模板类资产 / 第一个技能 | ☑ |
 | `notes/` | 目录 | 出现第一份过程记录 | ☑ |
 | `logs/` | 目录 | 首次产生临时文件 / 运行记录 | ☑ |
-| `docs/plans/` `docs/references/` | 目录 | 出现第一份一次性计划 / 参考资料 | ☐ 待建 |
+| `docs/plans/` `docs/references/` | 目录 | 出现第一份一次性计划 / 参考资料 | `docs/plans/` ☑（2026-10-09 首份 `2026-10-09-v1.1.5清尾任务书.md`）；`docs/references/` ☐ 待建 |
 | `assets/` | 目录 | 出现第一份图件 / 静态资源 | ☐ 待建（现放 `docs/img/`，见 §九 第 3 条） |
 | `dist/` | 目录 | 出现第一份流水线产物 | ☐ 待建（跑 `拼合.mjs` 即出现；**不进版本库**） |
 | `release/` | 目录 | 需要对外发布时（使用者手动定版） | ☐ 待建（**本项目用 git tag + GitHub Release 代替**，见 §九 第 2 条） |

@@ -183,7 +183,7 @@ html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c6
   transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
 .nav-search:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
 .nav-search svg{flex:none;color:var(--text-3)}
-.nav-search input{flex:1;min-width:0;border:0;outline:0;font-size:13.5px;color:var(--text);background:transparent;text-overflow:ellipsis}   /* v1.1.3：窄屏占位不再被硬裁半个字（原来是 clip） */
+.nav-search input{flex:1;min-width:0;border:0;font-size:13.5px;color:var(--text);background:transparent;text-overflow:ellipsis}   /* v1.1.3：窄屏占位不再被硬裁半个字（原来是 clip） */   /* v1.1.5 续 19：去掉 outline:0 —— 见下方「焦点环收成一套」 */
 .nav-search input::placeholder{color:var(--text-3)}
 .search-clear{flex:none;display:none;width:18px;height:18px;padding:0;border:0;border-radius:50%;
   background:var(--bg-hover);color:var(--text-3);font-size:12px;font-family:inherit;
@@ -1329,6 +1329,29 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
 .search-clear:focus-visible,.float-nav:focus-visible,.pron-btn:focus-visible,
 .lang-btn:focus-visible,.lang-item:focus-visible,
 .quiz-again:focus-visible,.nf-chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+/* v1.1.5（续 19 修复·F7）：焦点环**收成一套**。上面两批列表漏了 6 个顶栏控件 —— 它们一直在用
+   浏览器默认环（实测计算值 `auto 1px rgb(16,16,16)`），与旁边的品牌色环并排出现就是两种风格：
+     `.nav-links a`（词条 / 自测 / 更新三个导航项，含 `.current`）、`#navFav`、`#kbdBtn`、`#themeBtn`
+   （`#navFav` 虽是 `.favorite-button`，但顶栏 `.nav-fav` 的按钮样式更具体，实测拿到的是默认环，
+     所以这里按**顶栏实际形态**补 `.nav-fav`）。桌面与窄屏（搬进抽屉 / 底部 tab 栏）同一份选择器都覆盖。
+   另：搜索输入框原先自己写了 `outline:0`（只靠 `.nav-search:focus-within` 的边框＋光晕），
+   实测它同样不在自定义列表里 —— 现一并并入，键鼠两种输入都拿到同一条品牌色环。 */
+.nav-links a:focus-visible,.nav-fav:focus-visible,.kbd-btn:focus-visible,.theme-btn:focus-visible,
+.nav-search input:focus-visible{
+  outline:2px solid var(--brand);outline-offset:2px}
+
+/* v1.1.5（续 19 修复·F7）：「跳到主内容」链接 —— 键盘用户按第一个 Tab 就能跳过顶栏与侧栏。
+   默认视觉隐藏（不是 display:none：那样不可聚焦），聚焦时出现在左上角。
+   ⚠️ 刻意**不加 transition**：出现与否必须由 `:focus` 这一个同步状态决定。
+   （实测坑：`--virtual-time-budget` 下过渡不推进 —— 加了 .15s 过渡后计算值永远停在起始位置，
+     连 `:focus` 命中、`:focus-visible` 命中、`transition:none` 一置就变 `none` 都验过了；
+     这属于环境事实，见 `校验.mjs` 里那条注释。闸门要判的也正是"聚焦就出现"这件事。） */
+.skip-link{position:fixed;top:8px;left:8px;z-index:200;transform:translateY(-200%);
+  background:var(--surface);color:var(--brand);border:1px solid var(--brand);border-radius:9px;
+  padding:9px 14px;font-size:13px;font-weight:600;text-decoration:none;
+  box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.skip-link:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.skip-link:focus{transform:none}
 
 /* ---------- 响应式 ---------- */
 .drawer-mask{display:none;position:fixed;inset:0;background:var(--mask);z-index:70}
@@ -1500,6 +1523,10 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
 </head>
 <body>
 
+<!-- v1.1.5（续 19 修复·F7）：「跳到主内容」链接 —— 必须是文档里第一个可聚焦元素（Tab 第一下就到它）。
+     文案由 applyLangDom() 按界面语言刷新（见 zh/en 两份文案表）。 -->
+<a class="skip-link" id="skipLink" href="#mainArea">跳到主内容</a>
+
 <header class="nav">
   <button class="nav-drawer-btn" id="drawerBtn" aria-label="打开主题目录" aria-expanded="false" aria-controls="sideNav">☰</button>
   <a class="nav-brand" id="navBrand" href="#topic=t1" title="回到当前主题">
@@ -1564,7 +1591,7 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
     <div class="side-title" id="sideTitleCat" hidden>分类</div>
     <nav id="catList" aria-label="分类目录" hidden></nav>
   </aside>
-  <main class="main" id="mainArea">
+  <main class="main" id="mainArea" tabindex="-1">
     <div id="topicView"></div>
     <div id="termView" hidden></div>
     <footer class="site-footer" id="siteFooter"></footer>
@@ -2308,6 +2335,8 @@ var I18N_EN = {
   colorToast: 'Theme color: {n}', searchPlaceholder: 'Search terms…',
   searchLabel: 'Search terms', searchClear: 'Clear search',
   drawerOpen: 'Open topic directory', mainNav: 'Main navigation',
+  /* v1.1.5（续 19 修复·F7）：「跳到主内容」链接文案 */
+  skipToMain: 'Skip to main content',
   topicDir: 'Topic directory', catDir: 'Category directory', sideTopics: 'Topics',
   brandTitle: 'Back to current topic', themeColorAria: 'Theme color',
   langSwLabel: 'Language', tocTitle: 'On this page',
@@ -2414,6 +2443,13 @@ function applyLangDom(){
   if (nb) nb.setAttribute('title', ts('brandTitle', '回到当前主题'));
   var nl = el('navLinks');
   if (nl) nl.setAttribute('aria-label', ts('mainNav', '主导航'));
+  /* v1.1.5（续 19 修复·F7）：「跳到主内容」链接的文案随界面语言刷新 */
+  var skl = el('skipLink');
+  if (skl){
+    var skt = ts('skipToMain', '跳到主内容');
+    skl.textContent = skt;
+    skl.setAttribute('aria-label', skt);
+  }
   /* v5（2026-09-28 工程线体检 D2 修复）：切语言时链接文案必须重渲——此前只刷了容器 aria，
      英文界面下「词条 / 自测 / 更新」永远显示中文标签 */
   renderNavLinks();
@@ -4582,6 +4618,43 @@ var vtSkip = false;    /* 置位则本次不做过渡（例如"在详情页点�
 /* v5（2026-09-29 修复）：语言切换是「同视图重渲」——记录切换前 scrollY（≥0 表示待恢复），
    paint 末尾恢复、renderApp 不再播导航动画；其余导航不走此通道 */
 var preserveScroll = -1;
+/* v5（2026-10-09 续 19 修复·F6）：切语言保留的是「内容位置」而不是 scrollY。
+   来历：中英分册逐项 1:1 镜像、但字宽不同 ⇒ 同一节在重排后高度会变，只恢复 scrollY 会让
+   「你正在读的那一节」在视口里挪位（实测 1280×800 挪 24px；窄屏最多 342px，见普查结论 §4）。
+   做法：切换时记「当前视图根里第一个 top ≥ 120 的子节点」的**索引路径** ＋ 它当时的视口 top；
+   重渲后按同一条路径把它找回来，scrollTo 使它的 top 与记录值一致。
+   为什么用索引路径：中英分册结构逐项镜像（派生项目已核验），索引跨语言稳定；元素 id 在派生内容里
+   可能是中文派生值，反而不可靠。找不到就返回 false，由 paint() 退回 scrollY 口径（这条兜底必须有）。 */
+var preserveAnchor = null;
+function captureScrollAnchor(){
+  try {
+    var root = state.term ? el('termView') : el('topicView');
+    if (!root || root.hidden) return null;
+    var kids = root.children;
+    var off = 120;                    /* 目标：让「视口 120px 处」那个节点回到同一位置 */
+    for (var i = 0; i < kids.length; i++){
+      var t = kids[i].getBoundingClientRect().top;
+      if (t >= off) return { root: state.term ? 'termView' : 'topicView', path: [i], off: Math.round(t * 100) / 100,
+        scrollY: Math.round(window.scrollY || window.pageYOffset || 0) };
+    }
+  } catch (e){}
+  return null;
+}
+function restoreScrollAnchor(a){
+  if (!a || !a.path) return false;
+  try {
+    var n = el(a.root);
+    for (var i = 0; i < a.path.length; i++){
+      if (!n) return false;
+      n = n.children[a.path[i]];
+    }
+    if (!n || !n.getBoundingClientRect) return false;
+    var top = n.getBoundingClientRect().top;
+    if (!isFinite(top)) return false;
+    window.scrollTo(0, Math.max(0, Math.round((window.scrollY || window.pageYOffset || 0) + top - a.off)));
+    return true;
+  } catch (e){ return false; }
+}
 var vtGen = 0;         /* 过渡代际：只有最后一次开的过渡有权做收尾清理 */
 var pendingCatGoto = null;   /* 待滚动到的分类锚点：由 paint() 在列表渲染完之后消费 */
 /* ⚠️ 首屏必须绕过过渡：startViewTransition 的回调是**异步**的，
@@ -4710,9 +4783,25 @@ function paint(){
      模态却不关、滚动锁也不解，实测用户滚轮滚不动（页面被锁死）。paint() 是所有视图重渲的唯一落点，
      导航时在这里统一收场（未打开时 closeZoom() 是空操作）。 */
   closeZoom();
+  /* v5（2026-10-09 续 19 修复·F5 导航时收起浮层）：语言浮层 / 主题色浮层 / 各视图的自绘下拉（.dd）
+     原先只挂在「点外部」「Esc」「再点一次按钮」三条路上 —— 任何 hash 导航（浏览器后退 / 点词条 /
+     点导航项）都不会收，浮层就跨视图留在屏上，要再点一下空白才关。
+     与 closeZoom() 同一口径：paint() 是所有视图重渲的唯一落点，导航时在这里统一收场。
+     传 false 不抢焦点（导航时焦点该跟着视图走，而不是被拽回浮层按钮上）。
+     顺序说明：语言浮层在下方「语言切换」分支里**先**被关闭（点选项那一步就关了），此处再调是空操作。 */
+  closeLangMenu(false);
+  closeColorMenu(false);
+  closeAllDds();
   /* v5（2026-09-29 修复）：同视图重渲（语言切换）——恢复切换前的滚动位置。
-     放在最后执行，覆盖各分支里的 scrollTo(0,0)；同一任务内后一次 scrollTo 生效，不闪屏。 */
-  if (preserveScroll >= 0){
+     放在最后执行，覆盖各分支里的 scrollTo(0,0)；同一任务内后一次 scrollTo 生效，不闪屏。
+     v5（2026-10-09 续 19 修复·F6）：只恢复 scrollY 不够 —— 中英重排后「你正在读的那一节」会挪位
+     （实测同一节在视口挪 24–342px，窄屏更明显）。改为**优先按内容锚点恢复**（见 preserveAnchor
+     与 captureScrollAnchor / restoreScrollAnchor），锚点找不到才退回这里的 scrollY 口径。 */
+  if (preserveAnchor){
+    var pa = preserveAnchor;
+    preserveAnchor = null;
+    if (!restoreScrollAnchor(pa) && pa.scrollY >= 0) window.scrollTo(0, pa.scrollY);
+  } else if (preserveScroll >= 0){
     var psY = preserveScroll;
     preserveScroll = -1;
     window.scrollTo(0, psY);
@@ -5283,8 +5372,12 @@ function bindEvents(){
     if (!b || b === host) return;
     closeLangMenu(false);
     if (b.getAttribute('data-langset') === state.lang) return;
-    /* v5（2026-09-29 修复）：语言切换保留滚动位置——此前重渲会把长页面拉回顶部 */
+    /* v5（2026-09-29 修复）：语言切换保留滚动位置——此前重渲会把长页面拉回顶部
+       v5（2026-10-09 续 19 修复·F6）：升级为「保留内容位置」——先记内容锚点（同一节的索引路径），
+       重渲后按锚点恢复；锚点构造不出来（空视图 / 未知结构）时 preserveAnchor 为 null，
+       paint() 仍走下面的 preserveScroll（scrollY）兜底。 */
     preserveScroll = window.scrollY || window.pageYOffset || 0;
+    preserveAnchor = captureScrollAnchor();
     setLang(b.getAttribute('data-langset'));
     updateHash();
   });

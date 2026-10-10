@@ -1,6 +1,10 @@
-﻿/* ============================================================
+/* ============================================================
    engineering/校验.mjs —— 交付前自检：知识库 md 可解析 + 产物内联 JS + #debug 报告
-   用法：node engineering/校验.mjs   （先跑 engineering/拼合.mjs 再跑本脚本）
+   用法：node engineering/校验.mjs [--strict]
+     · 默认：行为不变 —— 起不了 Chrome 的项记「⏸ 需外部验证」并计入 manual，**不计入 fail**，
+       退出码 0（CI 跑在 ubuntu 上无 Chrome，必须继续绿）。
+     · --strict（或 JC_STRICT=1）：任何 manual > 0 即退出码 **2**（区别于 fail 的 1），
+       并打印一行「严格模式：N 项未在本机验证」——「退出码 0 ≠ 真检过」这个判定盲区由此补上。
    红线：#debug 0 错误才算完成
    ============================================================ */
 import fs from 'fs';
@@ -15,7 +19,17 @@ import { parseKnowledgeDir, serializeTerms, entryToMd, deepEqual, parseChangelog
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT_DIR = path.join(ROOT, 'content');
 const OUT = path.join(ROOT, 'dist', '新能源汽车知识图鉴.html');
-const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+/* v1.1.5（续 20 修复·F8）：Chrome 路径可被 JC_CHROME 覆盖 —— 让「无 Chrome 时的降级口径」
+   本身可被自动化验证（把 JC_CHROME 指到一个不存在的路径即可造出降级场景），也让别的机器能改路径 */
+const CHROME = process.env.JC_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+/* v1.1.5（续 20 修复·F8）：严格模式开关（命令行 --strict 或环境变量 JC_STRICT=1） */
+const STRICT = process.argv.indexOf('--strict') >= 0 || process.env.JC_STRICT === '1';
+/* v1.1.5（续 20）：按 id 跳过指定的**需要 Chrome 的**项（`JC_SKIP=③-c,③-k`）——
+   只用于「分小批跑」与调试：本文件一次要起十几个无头 Chrome，低配机 / 系统不稳时整轮太久。
+   被跳过的项按 manual++ 计（不是静默通过），所以 `--strict` 照样会拦。
+   默认（不设 JC_SKIP）行为完全不变 —— CI 与日常一律整轮跑。 */
+const SKIP_IDS = (process.env.JC_SKIP || '').split(',').map(s => s.trim()).filter(Boolean);
+function skipped(id){ return SKIP_IDS.indexOf(id) >= 0; }
 let fail = 0;
 
 /* ① 知识库 md 解析 + 序列化文本语法（等价于站点将生成的数据区） */
@@ -280,8 +294,8 @@ function headlessDebug(hash, label){
   if (ok && zero) console.log('✓ ' + label + '：0 错误 · 0 警告');
   else { console.log('✗ ' + label + ' 报告：' + m[1].replace(/<[^>]+>/g, ' ').slice(0, 300)); fail++; }
 }
-headlessDebug('#debug', '#debug');
-headlessDebug('#debug&lang=en', '#debug&lang=en');
+if (!skipped('③')){ headlessDebug('#debug', '#debug'); headlessDebug('#debug&lang=en', '#debug&lang=en'); }
+else { console.log('⏸ #debug / #debug&lang=en：JC_SKIP 指定跳过（分小批跑）'); manual += 2; }
 
 /* ③-b 搜索语料回归（2026-09-28 工程线体检 D1 修复配套）：界面语言只影响渲染、不影响可检索性——
    英文界面的语料是「英文 + 中文原文」的超集，同一中文关键词与拼音的命中数不得少于中文界面（且中文侧 >0）。
@@ -298,6 +312,9 @@ function headlessCardCount(hash){
   return (slice.match(/data-card=/g) || []).length;
 }
 if (terms){
+  if (skipped('③-b')){
+    console.log('⏸ 搜索语料（永磁 / ycdj）：JC_SKIP 指定跳过（分小批跑）'); manual += 2;
+  } else {
   const probes = ['永磁', 'ycdj'];
   for (const probe of probes){
     const zhN = headlessCardCount('#topic=t5&q=' + encodeURIComponent(probe));
@@ -309,6 +326,7 @@ if (terms){
     /* 英文语料是超集 ⇒ 命中数只应 ≥ 中文界面；等号是常态，多命中（英文文案含中文词）不算缺陷 */
     if (zhN > 0 && enN >= zhN) console.log('✓ 搜索语料（' + probe + '）：中文界面 ' + zhN + ' 卡 ≤ 英文界面 ' + enN + ' 卡');
     else { console.log('✗ 搜索语料（' + probe + '）：中文界面 ' + zhN + ' 卡 / 英文界面 ' + enN + ' 卡（英文应 ≥ 中文且中文 > 0）'); fail++; }
+  }
   }
 }
 
@@ -345,9 +363,12 @@ function headlessPracticeProgress(){
   return m ? m[1] : '(未抓到探针)';
 }
 {
-  const got = headlessPracticeProgress();
+  const got = skipped('③-c') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessPracticeProgress();
   if (got === null){
     console.log('⏸ 行为断言（自测进度数字）：本进程无法启动 Chrome，此项需外部验证');
+    manual++;
+  } else if (got.indexOf('SKIP:') === 0){
+    console.log('⏸ 行为断言（自测进度数字）：' + got.slice(5) + '，此项需外部验证');
     manual++;
   } else {
     const m = got.match(/已会\s*(\d+)\s*\/\s*(\d+)/);
@@ -459,7 +480,7 @@ function headlessMorphGate(){
   return m ? m[1] : 'SKIP:未抓到探针（Chrome 输出 ' + dom.length + ' 字符）';
 }
 {
-  const got = headlessMorphGate();
+  const got = skipped('③-d') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessMorphGate();
   if (got === null){
     console.log('⏸ 行为断言（返回列表 morph）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -575,7 +596,7 @@ function headlessNavStateGate(){
   try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
 }
 {
-  const got = headlessNavStateGate();
+  const got = skipped('③-e/③-f') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessNavStateGate();
   if (got === null){
     console.log('⏸ 行为断言（导航清场）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -609,6 +630,347 @@ function headlessNavStateGate(){
     } else {
       console.log('✓ 行为断言（F 放大态残留）：放大示意图后按浏览器后退 → 遮罩已收（maskHidden=true）、滚动锁已还原（overflow=""）');
     }
+  }
+}
+
+/* ③-j 行为断言（2026-10-09 续 19 新增·F5）：导航时必须收起浮层。
+   来历：同类缺陷普查的 F5 —— 语言浮层 / 主题色浮层 / 各视图的自绘下拉（.dd）只挂在
+   「点外部」「Esc」「再点一次按钮」三条路上，任何 hash 导航（浏览器后退 / 点词条 / 点导航项）
+   都不会收，浮层就跨视图留在屏上。修法与 closeZoom() 同一口径：paint() 里统一收场。
+   判据（只看导航之后的 DOM）：
+     A 打开语言浮层 → `history.back()`（真后退）→ `#langPop.hidden` 必须为 true、`#langSw` 不带 open
+     B 打开主题色浮层 → 改 hash 导航      → `#colorPop.hidden` 必须为 true
+     C 打开 .dd 下拉（自测视图的选主题）→ `history.back()` → `.dd.open` 数量必须为 0
+   三个场景都必须**先真的打开了**（否则是假绿）。 */
+function headlessOverlayGate(){
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  let html;
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  const probe = `
+<script>(function(){
+  var out = {};
+  function report(){ document.title = 'OVERLAY_PROBE:' + JSON.stringify(out); }
+  function snap(){ return { hash: location.hash,
+    langHidden: document.getElementById('langPop').hidden,
+    langOpenCls: document.getElementById('langSw').className.indexOf('open') >= 0,
+    colorHidden: document.getElementById('colorPop').hidden,
+    ddOpen: document.querySelectorAll('.dd.open').length }; }
+  function start(){
+    location.hash = '#topic=t2';
+    setTimeout(function(){
+      document.getElementById('langBtn').click();
+      out.A_open = !document.getElementById('langPop').hidden;
+      history.back();
+      setTimeout(function(){ var s = snap(); out.A_hash = s.hash; out.A_langHidden = s.langHidden; out.A_langOpenCls = s.langOpenCls; step2(); }, 1000);
+    }, 900);
+  }
+  function step2(){
+    location.hash = '#topic=t1';
+    setTimeout(function(){
+      document.getElementById('colorBtn').click();
+      out.B_open = !document.getElementById('colorPop').hidden;
+      location.hash = '#topic=t3';
+      setTimeout(function(){ out.B_colorHidden = snap().colorHidden; step3(); }, 1000);
+    }, 900);
+  }
+  function step3(){
+    location.hash = '#practice';
+    setTimeout(function(){
+      var dd = document.querySelector('#topicView .dd[data-dd="practiceTopic"]');
+      if (!dd){ out.C_err = 'no-dd'; return report(); }
+      var b = dd.querySelector('.dd-btn');
+      if (b) b.click();
+      out.C_open = document.querySelectorAll('.dd.open').length;   /* 必须立刻量：下一次重渲就会收掉 */
+      history.back();
+      setTimeout(function(){ out.C_afterBack = snap().ddOpen; report(); }, 1000);
+    }, 1000);
+  }
+  if (document.readyState === 'complete') setTimeout(start, 600);
+  else window.addEventListener('load', function(){ setTimeout(start, 600); });
+})();<\/script>`;
+  const tmp = path.join(os.tmpdir(), 'jc-overlay-' + process.pid + '-' + Date.now() + '.html');
+  fs.writeFileSync(tmp, html.replace('</body>', probe + '</body>'), 'utf8');
+  const r = spawnSync(CHROME, ['--headless=new', '--disable-gpu', '--window-size=1280,900', '--virtual-time-budget=12000', '--dump-dom',
+    pathToFileURL(tmp).href], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const dom = r.stdout || '';
+  try { fs.unlinkSync(tmp); } catch (e){}
+  if (r.error && dom.length === 0) return null;
+  const m = dom.match(/<title>OVERLAY_PROBE:([^<]*)<\/title>/);
+  if (!m) return 'SKIP:未抓到探针（Chrome 输出 ' + dom.length + ' 字符）';
+  try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
+}
+{
+  const got = skipped('③-j') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessOverlayGate();
+  if (got === null){
+    console.log('⏸ 行为断言（导航收起浮层）：本进程无法启动 Chrome，此项需外部验证');
+    manual++;
+  } else if (typeof got === 'string'){
+    console.log('⏸ 行为断言（导航收起浮层）：' + got.slice(5) + '，此项需外部验证');
+    manual++;
+  } else {
+    const bad = [];
+    if (got.A_open !== true) bad.push('A 探针没能打开语言浮层（选择器变了？）');
+    else if (got.A_langHidden !== true || got.A_langOpenCls === true) bad.push('A 语言浮层按浏览器后退后仍开着（hash=' + got.A_hash + '、hidden=' + got.A_langHidden + '、按钮带 open=' + got.A_langOpenCls + '）');
+    if (got.B_open !== true) bad.push('B 探针没能打开主题色浮层');
+    else if (got.B_colorHidden !== true) bad.push('B 主题色浮层在 hash 导航后仍开着');
+    if (got.C_err) bad.push('C 探针场景构造失败（' + got.C_err + '）');
+    else if (got.C_open !== 1) bad.push('C 探针没能打开 .dd 下拉（实测 open=' + got.C_open + '）');
+    else if (got.C_afterBack !== 0) bad.push('C 自绘下拉在浏览器后退后仍开着（实测 open=' + got.C_afterBack + '）');
+    if (bad.length){
+      console.log('✗ 行为断言（导航收起浮层）：' + bad.join('；')); fail++;
+    } else {
+      console.log('✓ 行为断言（导航收起浮层）：语言浮层后退已收（hidden=true、按钮不带 open）；主题色浮层 hash 导航已收；自绘下拉后退已收（open 1 → 0）');
+    }
+  }
+}
+
+/* ③-k 行为断言（2026-10-09 续 19 新增·F6）：切语言保留的是「内容位置」而不只是 scrollY。
+   来历：同类缺陷普查的 F6 —— 中英分册逐项 1:1 镜像但字宽不同，重排后同一节高度会变，
+   只恢复 scrollY 会让「你正在读的那一节」在视口里挪位（实测 1280×800 挪 24px；窄屏最多 342px）。
+   修法：切换前记「当前视图根里第一个 top ≥ 120 的子节点」的索引路径 ＋ 它当时的视口 top，
+   重渲后按同一条路径找回来对齐；找不到退回 scrollY 口径。
+   判据：把某个分节顶边停在视口 120px → 切英文 → **同一节的 top 偏移 ≤ 4px**（而不是断言 scrollY 不变）。 */
+function headlessLangAnchorGate(){
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  let html;
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  const probe = `
+<script>(function(){
+  var out = {};
+  function report(){ document.title = 'LANGANCHOR_PROBE:' + JSON.stringify(out); }
+  function secs(){ return document.querySelectorAll('#topicView [data-catsec]'); }
+  function start(){
+    var chip = document.querySelector('#topicChips .topic-chip[aria-pressed="true"]') || document.querySelector('#topicChips .topic-chip');
+    if (!chip){ out.err = 'no-chip'; return report(); }
+    var topic = chip.getAttribute('data-topic');
+    if (location.hash !== '#topic=' + topic){ location.hash = '#topic=' + topic; setTimeout(run, 1000); }
+    else run();
+    function run(){
+      var s = secs();
+      if (s.length < 2){ out.err = 'sections=' + s.length; return report(); }
+      var se = document.scrollingElement, max = se.scrollHeight - innerHeight;
+      var k = -1, need = -1;
+      for (var i = s.length - 1; i >= 0; i--){
+        var nd = window.scrollY + s[i].getBoundingClientRect().top - 120;
+        if (nd >= 0 && nd <= max + 1){ k = i; need = nd; break; }
+      }
+      if (k < 0){ out.err = 'no-placeable-section'; return report(); }
+      window.scrollTo(0, need);
+      out.secIndex = k;
+      out.beforeTop = Math.round(s[k].getBoundingClientRect().top * 100) / 100;
+      out.beforeScrollY = Math.round(window.scrollY);
+      document.getElementById('langBtn').click();
+      setTimeout(function(){
+        var opt = document.querySelector('#langPop [data-langset="en"]');
+        if (!opt){ out.err = 'no-lang-opt'; return report(); }
+        opt.click();
+        setTimeout(function(){
+          var s2 = secs();
+          out.lang = document.documentElement.lang || '';
+          out.hash = location.hash;
+          out.afterScrollY = Math.round(window.scrollY);
+          out.afterTop = s2[k] ? Math.round(s2[k].getBoundingClientRect().top * 100) / 100 : null;
+          out.delta = (out.afterTop === null) ? null : Math.round((out.afterTop - out.beforeTop) * 100) / 100;
+          report();
+        }, 1000);
+      }, 200);
+    }
+  }
+  if (document.readyState === 'complete') setTimeout(start, 600);
+  else window.addEventListener('load', function(){ setTimeout(start, 600); });
+})();<\/script>`;
+  const tmp = path.join(os.tmpdir(), 'jc-langanchor-' + process.pid + '-' + Date.now() + '.html');
+  fs.writeFileSync(tmp, html.replace('</body>', probe + '</body>'), 'utf8');
+  const r = spawnSync(CHROME, ['--headless=new', '--disable-gpu', '--window-size=1280,900', '--virtual-time-budget=12000', '--dump-dom',
+    pathToFileURL(tmp).href], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const dom = r.stdout || '';
+  try { fs.unlinkSync(tmp); } catch (e){}
+  if (r.error && dom.length === 0) return null;
+  const m = dom.match(/<title>LANGANCHOR_PROBE:([^<]*)<\/title>/);
+  if (!m) return 'SKIP:未抓到探针（Chrome 输出 ' + dom.length + ' 字符）';
+  try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
+}
+{
+  const got = skipped('③-k') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessLangAnchorGate();
+  if (got === null){
+    console.log('⏸ 行为断言（切语言保留内容位置）：本进程无法启动 Chrome，此项需外部验证');
+    manual++;
+  } else if (typeof got === 'string'){
+    console.log('⏸ 行为断言（切语言保留内容位置）：' + got.slice(5) + '，此项需外部验证');
+    manual++;
+  } else if (got.err){
+    console.log('⏸ 行为断言（切语言保留内容位置）：母版示例里构造不出场景（' + got.err + '），此项需外部验证');
+    manual++;
+  } else if (got.lang !== 'en'){
+    console.log('✗ 行为断言（切语言保留内容位置）：探针没能真的切到英文（lang=' + got.lang + '、hash=' + got.hash + '）'); fail++;
+  } else if (got.afterTop === null){
+    console.log('✗ 行为断言（切语言保留内容位置）：切语言后找不到同一个分节（索引 ' + got.secIndex + '）'); fail++;
+  } else if (Math.abs(got.delta) > 4){
+    console.log('✗ 行为断言（切语言保留内容位置）：切语言后同一节在视口挪了 ' + got.delta + 'px（应 ≤ 4px）—— 实测 top ' +
+      got.beforeTop + ' → ' + got.afterTop + '、scrollY ' + got.beforeScrollY + ' → ' + got.afterScrollY + '（只恢复 scrollY 就会这样）'); fail++;
+  } else {
+    console.log('✓ 行为断言（切语言保留内容位置）：第 ' + (got.secIndex + 1) + ' 节视口 top ' + got.beforeTop + ' → ' +
+      got.afterTop + '（偏移 ' + got.delta + 'px ≤ 4px，scrollY ' + got.beforeScrollY + ' → ' + got.afterScrollY + '）');
+  }
+}
+
+/* ③-l 行为断言（2026-10-09 续 19 新增·F7）：无障碍两项 —— 「跳到主内容」＋ 焦点环收成一套。
+   来历：ACCEPTANCE §三「未列入必修」那条 —— ① 无 skip link ② 焦点环两套风格（实测 6 个顶栏控件
+   在用浏览器默认环 `auto 1px rgb(16,16,16)`，与旁边的品牌色环并排就是两种风格）。
+   判据：
+     A `.skip-link` 存在、`href` 指向真实存在的容器、该容器 `tabindex="-1"`、默认隐藏（transform 有位移）
+     B 聚焦后必须可见（transform 变 none）、且它确实是文档里**第一个**可聚焦元素
+     C 每个「可见 · 有尺寸 · 可聚焦」的控件，聚焦后的计算环必须同源：`solid 2px` ＋ 品牌色
+   ⚠️ 环境事实：`--virtual-time-budget` 下 CSS 过渡**不推进**（实测加了 .15s 过渡后计算值永远停在
+      起始位置；`:focus` 命中、置 `transition:none` 立刻变 none 都验过）——所以 skip link 刻意不做过渡，
+      这条断言才判得动。程序化 `.focus()` 在该环境下会命中 `:focus-visible`（实测），故可以直接量计算值。 */
+function headlessA11yGate(){
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  let html;
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  const probe = `
+<script>(function(){
+  var out = { ringBad: [] };
+  function report(){ document.title = 'A11Y_PROBE:' + JSON.stringify(out); }
+  function hex2rgb(h){
+    h = h.trim().replace('#','');
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return 'rgb(' + parseInt(h.slice(0,2),16) + ', ' + parseInt(h.slice(2,4),16) + ', ' + parseInt(h.slice(4,6),16) + ')';
+  }
+  function start(){
+    out.brandHex = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim();
+    var brand = hex2rgb(out.brandHex);
+    out.brandRgb = brand;
+    var sl = document.querySelector('.skip-link');
+    out.hasSkipLink = !!sl;
+    if (sl){
+      out.skipHref = sl.getAttribute('href');
+      var t = document.querySelector(sl.getAttribute('href'));
+      out.skipTargetExists = !!t;
+      out.skipTargetTabindex = t ? (t.getAttribute('tabindex') || '') : '';
+      out.skipFirstFocusable = document.querySelector('a[href],button,input,select,textarea,[tabindex]') === sl;
+      out.skipHiddenBefore = getComputedStyle(sl).transform;
+      sl.focus();
+      out.skipFocused = document.activeElement === sl;
+      var cs0 = getComputedStyle(sl);
+      out.skipRing = cs0.outlineStyle + ' ' + cs0.outlineWidth + ' ' + cs0.outlineColor;
+      out.skipVisibleAfterFocus = cs0.transform;
+      sl.blur();
+    }
+    var all = document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]');
+    var counted = 0;
+    for (var i = 0; i < all.length; i++){
+      var n = all[i];
+      if (n.disabled || n.tabIndex < 0) continue;
+      if (n.closest('[hidden]')) continue;
+      var r = n.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) continue;
+      var disp = getComputedStyle(n);
+      if (disp.display === 'none' || disp.visibility === 'hidden') continue;
+      counted++;
+      try { n.focus(); } catch (e){ continue; }
+      var c = getComputedStyle(n);
+      if (!(c.outlineStyle === 'solid' && c.outlineColor === brand && c.outlineWidth === '2px')){
+        out.ringBad.push((n.id ? '#' + n.id : (n.className && typeof n.className === 'string' && n.className.trim() ? '.' + n.className.trim().split(/\\s+/)[0] : n.tagName.toLowerCase())) +
+          ' → ' + c.outlineStyle + ' ' + c.outlineWidth + ' ' + c.outlineColor);
+      }
+      n.blur();
+    }
+    out.ringChecked = counted;
+    report();
+  }
+  if (document.readyState === 'complete') setTimeout(start, 700);
+  else window.addEventListener('load', function(){ setTimeout(start, 700); });
+})();<\/script>`;
+  const tmp = path.join(os.tmpdir(), 'jc-a11y-' + process.pid + '-' + Date.now() + '.html');
+  fs.writeFileSync(tmp, html.replace('</body>', probe + '</body>'), 'utf8');
+  const r = spawnSync(CHROME, ['--headless=new', '--disable-gpu', '--window-size=1280,900', '--virtual-time-budget=12000', '--dump-dom',
+    pathToFileURL(tmp).href], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const dom = r.stdout || '';
+  try { fs.unlinkSync(tmp); } catch (e){}
+  if (r.error && dom.length === 0) return null;
+  const m = dom.match(/<title>A11Y_PROBE:([^<]*)<\/title>/);
+  if (!m) return 'SKIP:未抓到探针（Chrome 输出 ' + dom.length + ' 字符）';
+  try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
+}
+{
+  const got = skipped('③-l') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessA11yGate();
+  if (got === null){
+    console.log('⏸ 行为断言（无障碍：跳转链接与焦点环）：本进程无法启动 Chrome，此项需外部验证');
+    manual++;
+  } else if (typeof got === 'string'){
+    console.log('⏸ 行为断言（无障碍：跳转链接与焦点环）：' + got.slice(5) + '，此项需外部验证');
+    manual++;
+  } else {
+    const bad = [];
+    if (got.hasSkipLink !== true) bad.push('A 没有「跳到主内容」链接（.skip-link）');
+    else {
+      if (!/^#/.test(String(got.skipHref)) || got.skipTargetExists !== true) bad.push('A skip link 的 href（' + got.skipHref + '）没指向真实存在的容器');
+      if (got.skipTargetTabindex !== '-1') bad.push('A 目标容器缺 tabindex="-1"（跳过去焦点落不下来）');
+      if (got.skipFirstFocusable !== true) bad.push('A skip link 不是文档里第一个可聚焦元素（Tab 第一下到不了）');
+      if (got.skipVisibleAfterFocus !== 'none') bad.push('A skip link 聚焦后仍不可见（transform=' + got.skipVisibleAfterFocus + '）');
+    }
+    if (got.ringChecked === 0) bad.push('C 一个可聚焦控件都没量到（探针选择器或页面结构变了）');
+    else if (got.ringBad && got.ringBad.length) bad.push('C ' + got.ringBad.length + ' 个控件的焦点环不同源 → ' + got.ringBad.join('、'));
+    if (bad.length){
+      console.log('✗ 行为断言（无障碍：跳转链接与焦点环）：' + bad.join('；')); fail++;
+    } else {
+      console.log('✓ 行为断言（无障碍：跳转链接与焦点环）：skip link → ' + got.skipHref + '（目标 tabindex=' + got.skipTargetTabindex +
+        '、第一个可聚焦、聚焦后可见）；' + got.ringChecked + ' 个可见可聚焦控件焦点环全部同源（solid 2px ' + got.brandRgb + '）');
+    }
+  }
+}
+
+/* ③-m 行为断言（2026-10-09 续 20 新增·F8）：`--strict` 把「退出码 0 ≠ 真检过」这个盲区补上。
+   来历：本文件原先在起不了 Chrome 时把相关项记「⏸ 需外部验证」并 manual++，最终
+   `process.exit(fail === 0 ? 0 : 1)` —— **退出码 0 不代表真的检过**，README/docs 只写了说明。
+   修法：加 `--strict`（或 JC_STRICT=1）；默认行为不变（CI 在 ubuntu 上无 Chrome，必须继续绿），
+   严格模式下 manual > 0 即退出码 **2**（区别于 fail 的 1）。
+   判据：把 JC_CHROME 指到一个不存在的路径各跑一次本脚本 —— 默认退出 0、`--strict` 退出 2、
+   且严格模式打印「严格模式：N 项未在本机验证」。这是**行为断言**：真跑一次子进程看退出码，
+   不是 grep 源码。⚠️ 必须在产物已存在时跑（否则脚本在产物缺失处就 process.exit(1) 了）。
+   ⚠️ 防自我递归见函数头注释：子进程必须带 `JC_GATE_CHILD` 记号，且 JC_SKIP 里强制含 ③-m。 */
+function strictExitGate(){
+  /* ⚠️ 防自我递归（20261010 评审补）：本闸门要 spawn 本脚本 —— 子进程若**再进 ③-m**，就会每层生 2 个、
+     深度无上限（spawnSync 逐层等待 ⇒ 永不返回、进程与内存线性失控）。
+     实测形态：`起步.mjs`（或 CI 的 smoke.yml）以继承环境跑 `校验.mjs`、不设 JC_SKIP 时命中这条路 ——
+     20261010 22:34 那次「自己跑验证.ps1」正卡在「步骤 2：起步.mjs」且 `验证报告.txt` 未生成。
+     双保险：① 子进程带 `JC_GATE_CHILD=1` 记号，一进来就直接降级为 ⏸；② 子进程的 JC_SKIP 里**强制含 ③-m**。 */
+  if (process.env.JC_GATE_CHILD === '1') return 'SKIP:本进程是 ③-m 造出的子进程（防自我递归，不再嵌套）';
+  if (!fs.existsSync(OUT)) return 'SKIP:产物不存在（本项要在拼合之后才跑得动）';
+  const SELF = fileURLToPath(import.meta.url);
+  const fake = path.join(os.tmpdir(), '__no_such_chrome__', 'chrome.exe');
+  const env = Object.assign({}, process.env, { JC_CHROME: fake, JC_GATE_CHILD: '1',
+    JC_SKIP: SKIP_IDS.concat(['③-m']).join(',') });
+  const base = ['--headless=new'];
+  const r1 = spawnSync(process.execPath, [SELF].concat(base), { encoding: 'utf8', env, maxBuffer: 32 * 1024 * 1024 });
+  const r2 = spawnSync(process.execPath, [SELF, '--strict'], { encoding: 'utf8', env, maxBuffer: 32 * 1024 * 1024 });
+  return {
+    defCode: r1.status,
+    strictCode: r2.status,
+    strictSaid: /严格模式：\d+ 项未在本机验证/.test(r2.stdout || ''),
+    defManual: (String(r1.stdout || '').match(/⏸/g) || []).length,
+    strictManual: (String(r2.stdout || '').match(/⏸/g) || []).length
+  };
+}
+{
+  const got = skipped('③-m') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : strictExitGate();
+  if (typeof got === 'string'){
+    console.log('⏸ 行为断言（严格模式退出码）：' + got.slice(5) + '，此项需外部验证');
+    manual++;
+  } else if (got.defManual === 0){
+    console.log('⏸ 行为断言（严格模式退出码）：探针没能造出「无 Chrome」场景（默认跑一个 ⏸ 都没有），此项需外部验证');
+    manual++;
+  } else if (got.defCode !== 0){
+    console.log('✗ 行为断言（严格模式退出码）：无 Chrome 时**默认**必须仍然退出 0（CI 在 ubuntu 上就是这条路），实测退出码 ' + got.defCode); fail++;
+  } else if (got.strictCode !== 2){
+    console.log('✗ 行为断言（严格模式退出码）：--strict 下 manual > 0 必须退出 2，实测退出码 ' + got.strictCode +
+      '（' + got.strictManual + ' 项未验证）'); fail++;
+  } else if (!got.strictSaid){
+    console.log('✗ 行为断言（严格模式退出码）：--strict 应打印一行「严格模式：N 项未在本机验证」，实测没打印'); fail++;
+  } else {
+    console.log('✓ 行为断言（严格模式退出码）：JC_CHROME 指向不存在路径时 —— 默认退出 ' + got.defCode +
+      '（' + got.defManual + ' 项 ⏸）、--strict 退出 ' + got.strictCode + '（' + got.strictManual + ' 项未在本机验证，已打印说明）');
   }
 }
 
@@ -700,7 +1062,7 @@ function headlessBackSourceGate(){
   try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
 }
 {
-  const got = headlessBackSourceGate();
+  const got = skipped('③-g') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessBackSourceGate();
   if (got === null){
     console.log('⏸ 行为断言（返回来源）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -790,7 +1152,7 @@ function headlessAcrossGate(){
   try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
 }
 {
-  const got = headlessAcrossGate();
+  const got = skipped('③-h') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessAcrossGate();
   if (got === null){
     console.log('⏸ 行为断言（跨词条过渡）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -887,7 +1249,7 @@ function headlessCatSpyGate(){
   try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
 }
 {
-  const got = headlessCatSpyGate();
+  const got = skipped('③-i') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessCatSpyGate();
   if (got === null){
     console.log('⏸ 行为断言（分类高亮跟随）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -912,4 +1274,11 @@ function headlessCatSpyGate(){
 if (fail === 0 && manual === 0) console.log('=== 校验全部通过 ===');
 else if (fail === 0) console.log('=== 校验通过；另有 ' + manual + ' 项无法在本进程启动 Chrome，须按上方命令外部验证并核对「0 错误 · 0 警告」 ===');
 else console.log('=== ' + fail + ' 项未过 ===');
+/* v1.1.5（续 20 修复·F8）：退出码三分 —— 0 全绿 / 1 有硬失败 / 2 严格模式下有未在本机验证的项。
+   默认行为与 v1.1.4 完全一致（manual > 0 仍是 0），所以 ubuntu CI 不受影响；
+   要「退出码 0 就等于真检过」就加 --strict（或 JC_STRICT=1）。 */
+if (STRICT && fail === 0 && manual > 0){
+  console.log('严格模式：' + manual + ' 项未在本机验证（本进程起不了 Chrome）——退出码 2（非 1：不是检失败，是没检成）');
+  process.exit(2);
+}
 process.exit(fail === 0 ? 0 : 1);

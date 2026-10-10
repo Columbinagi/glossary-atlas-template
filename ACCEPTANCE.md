@@ -103,7 +103,7 @@
   - **V18 实测**：默认 EXIT **0** / `--strict` EXIT **2**，各 **0.4s / 0.3s** 内结束；护栏分支单独实测命中（0.2s）。
   - **本版验证范围**：**净室构建 ＋ 校验（浏览器项 ⏸ 跳过）＋ 产物可复现**；**体检 64/64 与 ③-c ～ ③-l 的浏览器实测本版延期**，材料在 `logs/v1.1.5/`（`探针-*.mjs` 六个探针 ＋ `before/` 改前副本，均不进版本库）。
   - **仓库卫生**：本仓库**无 `dist/`**、`git ls-files logs` = **0**。
-  - **发版**：push `main` ＋ tag **`v1.1.5`** ＋ Release（Latest）；CI 结果见 `ROADMAP.md` §三。
+  - **发版**：提交 **`46db1d9`** ＋ tag **`v1.1.5`** ＋ [Release（Latest）](https://github.com/Columbinagi/glossary-atlas-template/releases/tag/v1.1.5) ＋ push `main`；**CI 首跑 success**（run `38062176080`，15s）—— 这条 CI 同时是「③-m 递归护栏」的活证据（未修时同路径会挂/超时）。
 - **发版状态（20261008 · 全部完成）**：
   - `main` 已推送（`dbf3dbf` → CI 入库后为 **`f84ad4a`**）
   - tag **`v1.1.2`**（`7f0f854`）与 **`v1.1.3`**（`4da8709`）已推送

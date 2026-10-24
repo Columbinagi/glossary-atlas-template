@@ -69,7 +69,7 @@
 - **根目录**：`README.md` `AGENTS.md` `MEMORY.md` `PRD.md` `CONTRACT.md` `ROADMAP.md` `ACCEPTANCE.md` `SOUL.md` `USER.md` `CHANGELOG.md` `LICENSE` ＋ `.gitignore` `.gitattributes`（**不放任何产物**）
 - `content/`：内容线领地 —— `内容规范.md` ＋ `站点配置.js`（派生时替换）
 - `engineering/`：工程线领地 —— 8 个 `.mjs`（起步 / 拼合 / 校验 / 体检 / lib-md / 收录草稿 / 重排编号 / 预览服务）
-- `templates/`：引擎母版 v5 ＋ 进度看板模板 v1
+- `templates/`：引擎母版 v5
 - `skills/`：`term-card-draft` / `term-card-publish`
 - `docs/`：`派生与排错.md` ＋ `img/`（README 配图，落点例外见 `AGENTS.md` §九 第 3 条）＋ `plans/`（一次性实施计划，带日期）
 - `notes/`：过程记录

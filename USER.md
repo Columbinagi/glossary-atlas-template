@@ -20,6 +20,7 @@
 - **交付方式**：**交付物挂在对话末尾**（可点击打开）；**不要只在正文里写个路径**。
 - **命名习惯**（**骨架层是硬规则，不做例外**）：骨架层目录英文小写、骨架文档英文大写、同一层不中英混搭；骨架目录内部随项目习惯。
 - **文档密度**：宁少勿滥 —— 先问"它回答的问题别的文档回答不了吗"再新建。
+- **轻量化偏好**：偏好精简；删除必须给回滚路径（如 `git checkout <tag> -- <path>`），不删没有退路的东西。
 - **状态色标**（默认值，未观察到使用者自己的约定）：🟢 已定 / 已完成 ｜ 🔵 进行中 ｜ 🟡 待定 / 待拍板 ｜ 🔴 缺陷 / 阻断。用前若使用者另有习惯，从其习惯。
 
 ## 工作路径
@@ -28,7 +29,7 @@
   > 新项目默认建在此目录下；**没填就问用户**，不要自己挑地方。
 - 其它常用路径：
   - 源项目（**只读参照**）：`E:\ProgramData\ModularData\新能源汽车行业了解`
-  - skill 仓库：`https://github.com/Columbinagi/project-bootstrap`（本地 clone 在 `C:\Users\KLEE\.dsh\skills\project-bootstrap`）
+  - skill 仓库：`https://github.com/Columbinagi/project-bootstrap`（本地 clone 在 `E:\ProgramData\GitHubData\Project\project-bootstrap`）
   - 本仓库：`E:\ProgramData\GitHubData\Project\词条图鉴模板`（远端 `https://github.com/Columbinagi/glossary-atlas-template.git`）
 
 ## 约束（雷区）

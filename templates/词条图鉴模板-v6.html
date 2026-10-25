@@ -349,7 +349,7 @@ body.is-term .main{max-width:var(--detail-max);margin:0 auto;padding:28px 32px 0
 .cl-ver{align-self:flex-start;font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-light);
   border:1px solid var(--brand);border-radius:999px;padding:0 8px;line-height:1.7}
 .cl-body{flex:1;min-width:0}
-.cl-subtitle{margin:-14px 0 24px;font-size:13.5px;color:var(--text-3);line-height:1.7}
+.cl-subtitle{margin:-14px 0 24px;font-size:14px;color:var(--text-3);line-height:1.7}
 /* 分类筛选条（对齐参考站 changelog-filter-group：is-active 高亮 + 滑动指示器） */
 .cl-filter{position:relative;display:inline-flex;gap:4px;background:var(--bg-soft);border:1px solid var(--border-light);
   border-radius:10px;padding:4px;margin:0 0 30px}
@@ -363,9 +363,9 @@ body.is-term .main{max-width:var(--detail-max);margin:0 auto;padding:28px 32px 0
   .cl-entry{flex-direction:column;gap:10px}
   .cl-meta{flex:none;align-items:center}
 }
-.cl-title{font-size:19px;font-weight:700;letter-spacing:-.01em;color:var(--text);margin:0 0 10px}
+.cl-title{font-size:20px;font-weight:700;letter-spacing:-.015em;color:var(--text);margin:0 0 10px}
 .cl-items{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
-.cl-items li{position:relative;padding-left:16px;font-size:13.5px;line-height:1.75;color:var(--text-2)}
+.cl-items li{position:relative;padding-left:16px;font-size:14px;line-height:1.75;color:var(--text-2)}
 .cl-items li:before{content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;
   border-radius:50%;background:var(--brand);opacity:.85}
 .cl-terms-head{margin-top:16px;font-size:12.5px;font-weight:600;color:var(--text-3)}
@@ -413,21 +413,21 @@ body.is-term .main{max-width:var(--detail-max);margin:0 auto;padding:28px 32px 0
 .dd-item.on{color:var(--brand);background:var(--brand-light)}
 .dd-item.on .ck{opacity:1}
 
-/* ---- ② 闪卡自测 ---- */
-.practice-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
-.practice-tip{font-size:12.5px;color:var(--text-3);line-height:1.6;flex:1 1 260px;min-width:0}
+/* ---- ② 闪卡自测（v2：题卡与头部同宽居中；圆角/阴影走 token） ---- */
+.practice-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:560px;margin:0 auto 24px}
+.practice-tip{font-size:13px;color:var(--text-3);line-height:1.6;flex:1 1 260px;min-width:0}
 .flash-stage{perspective:1200px;max-width:560px;margin:0 auto}
 .flash-card{position:relative;width:100%;height:260px;cursor:pointer;
   transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);outline:none;border:0;padding:0;
   background:transparent;font-family:inherit}
-.flash-card:focus-visible{outline:2px solid var(--brand);outline-offset:6px;border-radius:16px}
+.flash-card:focus-visible{outline:2px solid var(--brand);outline-offset:6px;border-radius:var(--radius-lg)}
 .flash-card.flip{transform:rotateY(180deg)}
 .flash-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  border:1px solid var(--border);border-radius:16px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;
-  box-shadow:0 1px 2px rgba(29,33,41,.05)}
+  box-shadow:var(--shadow-card)}
 .flash-face.back{transform:rotateY(180deg);background:var(--bg-soft)}
-.flash-face .hint{position:absolute;top:14px;left:0;right:0;text-align:center;font-size:11.5px;color:var(--text-3)}
+.flash-face .hint{position:absolute;top:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--text-3)}
 .flash-face .term{font-size:30px;font-weight:700;letter-spacing:-.3px}
 .flash-face .en{font-size:13px;color:var(--text-3);margin-top:6px}
 .flash-face .line{font-size:16px;line-height:1.8;color:var(--text)}

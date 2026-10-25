@@ -59,7 +59,7 @@
   /* v2（2026-10-25 呈现层重建）：布局 / 动效 token —— 断点与几何统一从这里取，别在别处写死 */
   --shell-max:1640px; --catalog-side:156px; --catalog-gap:28px; --card-gap:20px;
   --detail-max:980px; --detail-col:916px; --detail-half:458px; --float-gap:56px; --float-size:46px;
-  --vt-fade:.18s; --vt-morph:.45s; --vt-slide:16vw; --vt-enter:.32s; --vt-enter-delay:.11s;
+  --vt-fade:.18s; --vt-morph:.45s; --vt-slide:16vw; --vt-slide-dur:.3s; --vt-enter:.32s; --vt-enter-delay:.11s;
   /* 主题色三件套：默认值 = 原站 klein 浅色；运行期由 applyColorTheme() 覆盖 */
   --brand:#3559d8; --brand-light:#edf0fb; --brand-hover:#2a46b4;
   --green:#00b42a; --green-light:#e8ffea;
@@ -198,7 +198,7 @@ html[data-theme="dark"] .nav-logo{background:linear-gradient(135deg,#7b93ea,#4c6
   background:var(--surface);color:var(--text-2);font-size:15px;cursor:pointer;align-items:center;justify-content:center}
 
 /* ---------- v5（2026-09-27）：快捷键帮助面板（B3）+ 继续上次横幅（B1） ---------- */
-.kbd-btn{flex:none;width:36px;height:36px;border:1px solid var(--border);border-radius:9px;
+.kbd-btn{flex:none;width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
   background:var(--surface);color:var(--text-2);font-size:15px;cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);
   transition:border-color .15s,color .15s}
@@ -308,7 +308,7 @@ body.is-term .main{max-width:var(--detail-max);margin:0 auto;padding:28px 32px 0
 .main{min-width:0}
 /* 顶栏收藏：作用于「全站」，性质与搜索相同，所以放在顶栏与搜索同级，不混进主题目录 */
 .nav-fav{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;
-  border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text-2);
+  border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-2);
   font-size:13px;font-family:inherit;cursor:pointer;
   transition:border-color .15s,color .15s,background .15s}
 .nav-fav:hover{border-color:var(--brand);color:var(--brand)}
@@ -909,9 +909,9 @@ h3.card-title span{display:inline-block;font-size:14px;font-weight:500;color:var
 .crumb{font-size:13px;color:var(--text-3)}
 .crumb b{color:var(--text-2);font-weight:500}
 .topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
-.topbar-actions .favorite-button{width:32px;height:32px;border:1px solid var(--border);border-radius:9px;background:var(--surface)}
+.topbar-actions .favorite-button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
 .topbar-actions .favorite-button:hover{background:var(--bg-hover)}
-.tbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:9px;
+.tbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;
   padding:6px 12px;font-size:12.5px;color:var(--text-2);background:var(--surface);cursor:pointer;
   transition:border-color .15s,color .15s}
 .tbtn:hover{border-color:var(--brand);color:var(--brand)}
@@ -920,7 +920,7 @@ h3.card-title span{display:inline-block;font-size:14px;font-weight:500;color:var
 /* ---- v5：界面语言折叠菜单（对齐参考站 nav-language 形态；弹出层与主题色菜单共用同规格，见下方合并选择器） ---- */
 .lang-sw{position:relative;flex:none}
 .lang-btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;
-  border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text-2);
+  border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-2);
   font-size:13px;font-family:inherit;cursor:pointer;transition:border-color .15s,color .15s}
 .lang-btn:hover{border-color:var(--brand);color:var(--brand)}
 .lang-sw.open .lang-btn{border-color:var(--brand);color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
@@ -961,25 +961,25 @@ h3.card-title span{display:inline-block;font-size:14px;font-weight:500;color:var
      ③ 特性检测不通过、或用户开了「减少动态效果」→ 直接切换，功能不受影响
    ============================================================ */
 ::view-transition-old(root){animation:none}
-::view-transition-new(root){animation:vt-fade-in .18s ease-out both}
-::view-transition-group(morph){animation-duration:.45s;animation-timing-function:cubic-bezier(.22,1,.36,1)}
+::view-transition-new(root){animation:vt-fade-in var(--vt-fade) ease-out both}
+::view-transition-group(morph){animation-duration:var(--vt-morph);animation-timing-function:cubic-bezier(.22,1,.36,1)}
 /* 列表 → 详情：旧页淡出、新页延迟淡入，标题从卡片位置长大 */
-html[data-dir=open]::view-transition-old(root){animation:vt-root-out .18s ease-out both}
-html[data-dir=open]::view-transition-new(root){animation:vt-fade-in .3s ease-out .1s both}
+html[data-dir=open]::view-transition-old(root){animation:vt-root-out var(--vt-fade) ease-out both}
+html[data-dir=open]::view-transition-new(root){animation:vt-fade-in var(--vt-enter) ease-out var(--vt-enter-delay) both}
 ::view-transition-new(detail-enter){transform-origin:50% 12%;
-  animation:vt-body-in .32s cubic-bezier(.22,1,.36,1) .11s both}
-/* 详情 → 上/下一条：只让正文左右滑（参考站是 16vw，这里收到 8vw，连翻多条不晕） */
-html[data-dir=next]::view-transition-old(detail-body){animation:vt-out-l .3s var(--ease) both}
-html[data-dir=next]::view-transition-new(detail-body){animation:vt-in-r .3s var(--ease) both}
-html[data-dir=prev]::view-transition-old(detail-body){animation:vt-out-r .3s var(--ease) both}
-html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(--ease) both}
+  animation:vt-body-in var(--vt-enter) cubic-bezier(.22,1,.36,1) var(--vt-enter-delay) both}
+/* 详情 → 上/下一条：只让正文左右滑（v2 起按参考站放到 16vw，token 化后一处可调） */
+html[data-dir=next]::view-transition-old(detail-body){animation:vt-out-l var(--vt-slide-dur) var(--ease) both}
+html[data-dir=next]::view-transition-new(detail-body){animation:vt-in-r var(--vt-slide-dur) var(--ease) both}
+html[data-dir=prev]::view-transition-old(detail-body){animation:vt-out-r var(--vt-slide-dur) var(--ease) both}
+html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l var(--vt-slide-dur) var(--ease) both}
 @keyframes vt-fade-in{0%{opacity:0}}
 @keyframes vt-root-out{to{opacity:0}}
 @keyframes vt-body-in{0%{opacity:0;transform:translateY(9px) scale(.997)}}
-@keyframes vt-out-l{to{opacity:0;transform:translateX(-8vw)}}
-@keyframes vt-in-r{0%{opacity:0;transform:translateX(8vw)}}
-@keyframes vt-out-r{to{opacity:0;transform:translateX(8vw)}}
-@keyframes vt-in-l{0%{opacity:0;transform:translateX(-8vw)}}
+@keyframes vt-out-l{to{opacity:0;transform:translateX(calc(-1 * var(--vt-slide)))}}
+@keyframes vt-in-r{0%{opacity:0;transform:translateX(var(--vt-slide))}}
+@keyframes vt-out-r{to{opacity:0;transform:translateX(var(--vt-slide))}}
+@keyframes vt-in-l{0%{opacity:0;transform:translateX(calc(-1 * var(--vt-slide)))}}
 
 .detail-hero{margin-bottom:40px}
 .dh-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -990,7 +990,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
   font-size:14px;transition:color .15s,border-color .15s}
 .pron-btn:hover{color:var(--brand);border-color:var(--brand)}
 .dh-quote{margin-top:14px;font-size:15.5px;color:var(--text-2);
-  background:var(--bg-soft);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;
+  background:var(--bg-soft);border-left:3px solid var(--brand);border-radius:0 var(--radius-lg) var(--radius-lg) 0;
   padding:12px 16px;line-height:1.85}
 .dh-def{margin-top:16px;font-size:15.5px;line-height:1.85;color:var(--text)}
 .dh-def b{font-weight:650}
@@ -1005,7 +1005,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
 .c-ref{color:var(--brand);border-bottom:1px dashed var(--brand);cursor:pointer;white-space:nowrap}
 .c-ref b{font-weight:600}
 .c-ref:hover{background:var(--brand-light);border-bottom-style:solid}
-.dh-demo{margin-top:22px;background:var(--bg-soft);border:1px solid var(--border-light);border-radius:14px;
+.dh-demo{margin-top:22px;background:var(--bg-soft);border:1px solid var(--border-light);border-radius:var(--radius-lg);
   padding:22px;display:flex;flex-direction:column;align-items:center;gap:16px}
 .dh-demo .demo-main{width:100%;max-width:640px;display:flex;flex-direction:column;align-items:center;gap:14px}
 
@@ -1142,7 +1142,7 @@ html[data-dir=prev]::view-transition-new(detail-body){animation:vt-in-l .3s var(
    ============================================================ */
 
 /* ---- 主题切换按钮（三态：自动 / 浅色 / 深色） ---- */
-.theme-btn{flex:none;width:36px;height:36px;border:1px solid var(--border);border-radius:9px;
+.theme-btn{flex:none;width:36px;height:36px;border:1px solid var(--border);border-radius:8px;
   background:var(--surface);color:var(--text-2);cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;
   transition:border-color .15s,color .15s}
@@ -1189,7 +1189,7 @@ mark{background:var(--mark-bg);color:inherit;border-radius:2px;padding:0 1px}
 
 /* ---- 全局搜索结果提示行 ---- */
 .search-meta{display:flex;align-items:baseline;gap:10px;margin-bottom:22px;flex-wrap:wrap}
-.search-meta h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.search-meta h1{font-size:31px;font-weight:700;letter-spacing:-.03em;line-height:1.15}
 .search-meta .cnt{font-size:13px;color:var(--text-3)}
 .search-meta .scope{font-size:12.5px;color:var(--text-3)}
 

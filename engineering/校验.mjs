@@ -393,9 +393,9 @@ function headlessPracticeProgress(){
    跑**母版**而不是产物：引擎逐字节随拼合进产物（拼合按 MARK_ENG 切），而母版自带长示例数据、
    能稳定构造「滚到底」；净室起步只写一张短示例卡，构造不出来（那种情况报 ⏸ 而不是假绿）。 */
 function headlessMorphGate(){
-  const TEMPLATE = path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var rec = { named: '(未调用)' };
@@ -530,9 +530,9 @@ function headlessMorphGate(){
      E：`#changelog` → 点词条进详情 → body 不得含 `is-changelog` 且详情可见；再切语言 → hash 仍须 `#term=…`、详情仍在
      F：进详情 → 放大示意图 → `history.back()` → 遮罩必须已隐藏、`body.style.overflow` 必须已还原 */
 function headlessNavStateGate(){
-  const TEMPLATE = path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var out = {};
@@ -643,9 +643,9 @@ function headlessNavStateGate(){
      C 打开 .dd 下拉（自测视图的选主题）→ `history.back()` → `.dd.open` 数量必须为 0
    三个场景都必须**先真的打开了**（否则是假绿）。 */
 function headlessOverlayGate(){
-  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var out = {};
@@ -731,9 +731,9 @@ function headlessOverlayGate(){
    重渲后按同一条路径找回来对齐；找不到退回 scrollY 口径。
    判据：把某个分节顶边停在视口 120px → 切英文 → **同一节的 top 偏移 ≤ 4px**（而不是断言 scrollY 不变）。 */
 function headlessLangAnchorGate(){
-  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var out = {};
@@ -825,9 +825,9 @@ function headlessLangAnchorGate(){
       起始位置；`:focus` 命中、置 `transition:none` 立刻变 none 都验过）——所以 skip link 刻意不做过渡，
       这条断言才判得动。程序化 `.focus()` 在该环境下会命中 `:focus-visible`（实测），故可以直接量计算值。 */
 function headlessA11yGate(){
-  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var out = { ringBad: [] };
@@ -991,9 +991,9 @@ function decodeProbeTitle(s){
      B 更新日志 → 点词条 → 返回 ：hash 必须仍是 `#changelog`
      C 搜索结果 → 开卡片 → 返回 ：hash 必须保持来源主题与搜索词（`#topic=t5&q=…`），不得被改写成词条所属主题 */
 function headlessBackSourceGate(){
-  const TEMPLATE = path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var out = {};
@@ -1096,9 +1096,9 @@ function headlessBackSourceGate(){
      滚动 600px 后点「下一条」→ 必须①**真的开了过渡**（没被 vtSkip 砍掉）
      ②调用那一刻 scrollY 已经是 0（先归零）③dir=next ④名字里含 detail-body（水平滑动的挂点） */
 function headlessAcrossGate(){
-  const TEMPLATE = path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   var rec = { called: 0, scrollY: -1, dir: null, names: '' };
@@ -1188,9 +1188,9 @@ function headlessCatSpyGate(){
   /* 侧栏在 ≤860 会变抽屉、关闭时 #catList 是 hidden（syncCatActive 直接早退）——
      所以这一项必须在大窗口下跑，否则量到的是初始高亮而不是滚动侦测的结果（会假红/假绿）。
      JC_TEMPLATE 只在本地做「红绿对照」时用来指向改前副本，CI 与日常一律走默认母版。 */
-  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
-  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v5.html'; }
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
   const probe = `
 <script>(function(){
   function report(o){ document.title = 'CATSPY_PROBE:' + JSON.stringify(o); }
@@ -1226,8 +1226,10 @@ function headlessCatSpyGate(){
       var topAtSpy = sec.getBoundingClientRect().top;   /* 立刻量：这就是侦测函数将看到的输入 */
       /* ⚠️ 这一项不能靠滚动事件驱动：--virtual-time-budget 下 rAF 只跑一次、scroll 事件不触发
          （实测 ticks=1 / scrollEvents=0），挂在 scroll+rAF 上的 syncCatActive 在闸门里不会跑。
-         改借 renderTopicView() 末尾那次**同步**调用（点当前主题芯片触发一次重渲）。 */
-      chip2.click();
+         v2 批次 1 修正：也不再「点当前芯片触发重渲」—— 重渲会 window.scrollTo(0,0)，
+         随后的滚动事件会把高亮冲回第 0 个（实测 scrollYAfter=0，闸门假红）。
+         改为直接调同步函数，在「分节停在 90px」这一刻量结果；函数不在全局时才退回点击。 */
+      if (window.syncCatActive) window.syncCatActive(); else chip2.click();
       setTimeout(function(){
         report({ top: Math.round(topAtSpy * 100) / 100, on: onIdx(), target: target, btns: btns.length,
           margin: getComputedStyle(sec).scrollMarginTop, scrollYAfter: Math.round(window.scrollY) });
@@ -1249,7 +1251,14 @@ function headlessCatSpyGate(){
   try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
 }
 {
-  const got = skipped('③-i') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessCatSpyGate();
+  let got = skipped('③-i') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessCatSpyGate();
+  /* v2（批次 0）：本闸门在满负荷连跑时偶发抖动（20261025 基线实测：整轮判红、单独跑稳定绿——
+     场景靠 chip.click() 触发重渲，前一条 ③-h 刚回收浏览器，虚拟时间预算可能不够）。
+     重试 1 次，两次都红才判红 —— 判据不变，只降低环境抖动造成的假红。 */
+  if (!skipped('③-i') && got && typeof got === 'object' &&
+      (got.err || got.on === 'multiple' || got.on !== got.target || Math.abs(got.top - 90) > 1.5)){
+    got = headlessCatSpyGate();
+  }
   if (got === null){
     console.log('⏸ 行为断言（分类高亮跟随）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -1264,10 +1273,72 @@ function headlessCatSpyGate(){
     manual++;
   } else if (got.on !== got.target){
     console.log('✗ 行为断言（分类高亮跟随）：分节停在 top=' + got.top + '（scroll-margin=' + got.margin +
-      '）时，高亮应落在第 ' + (got.target + 1) + ' 个分类，实测落在第 ' + (got.on + 1) + ' 个 —— 与使用者手机端「点第 4 个亮第 3 个」同源（阈值卡在边界上）'); fail++;
+      '，scrollYAfter=' + got.scrollYAfter + '）时，高亮应落在第 ' + (got.target + 1) + ' 个分类，实测落在第 ' + (got.on + 1) + ' 个 —— 与使用者手机端「点第 4 个亮第 3 个」同源（阈值卡在边界上）'); fail++;
   } else {
     console.log('✓ 行为断言（分类高亮跟随）：分节停在 top=' + got.top + '（scroll-margin=' + got.margin +
       '）时高亮落在第 ' + (got.on + 1) + ' 个分类 —— 阈值与 scroll-margin 同源、不再卡边界');
+  }
+}
+
+/* ③-n 行为断言（v2 批次 1 新增）：详情页上下条浮标不得压住侧栏、不得侵占正文空档。
+   判据：浮标右缘 → 正文左缘 = 56px（±1，token --float-gap）、浮标宽 ≤176、详情页无侧栏、
+   与侧栏零重叠。v5 的红证据：间距固定 14px，170px 宽时与 208px 侧栏重叠 156px
+   （实测见 notes/20261025_参考站REA取证.md §5）。 */
+function headlessFloatGate(){
+  const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
+  let html;
+  try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
+  const probe = `
+<script>(function(){
+  function report(o){ document.title = 'FLOAT_PROBE:' + JSON.stringify(o); }
+  function run(){
+    var fl = document.querySelector('.float-nav.left');
+    var body = document.querySelector('.detail-body');
+    var nav = document.querySelector('.side-nav');
+    if (!fl || !body){ report({ err: 'no-left-float' }); return; }
+    var a = fl.getBoundingClientRect(), b = body.getBoundingClientRect();
+    var ns = nav ? getComputedStyle(nav) : null;
+    var overlap = 0;
+    if (nav && ns.display !== 'none'){
+      var nr = nav.getBoundingClientRect();
+      if (!(a.top > nr.bottom || a.bottom < nr.top))
+        overlap = Math.max(0, Math.min(nr.right, a.right) - Math.max(nr.left, a.left));
+    }
+    report({ vw: innerWidth, gap: Math.round(b.left - a.right), flW: Math.round(a.width),
+      flRight: Math.round(a.right), bodyLeft: Math.round(b.left),
+      sideDisplay: ns ? ns.display : 'none', overlap: Math.round(overlap) });
+  }
+  function start(){
+    if (location.hash.indexOf('term=') < 0) location.hash = '#term=doc-history';
+    setTimeout(run, 900);
+  }
+  if (document.readyState === 'complete') setTimeout(start, 400);
+  else window.addEventListener('load', function(){ setTimeout(start, 400); });
+})();<\/script>`;
+  const tmp = path.join(os.tmpdir(), 'jc-float-' + process.pid + '-' + Date.now() + '.html');
+  fs.writeFileSync(tmp, html.replace('</body>', probe + '</body>'), 'utf8');
+  const r = spawnSync(CHROME, ['--headless=new', '--disable-gpu', '--window-size=1600,900', '--virtual-time-budget=9000', '--dump-dom',
+    pathToFileURL(tmp).href], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const dom = r.stdout || '';
+  try { fs.unlinkSync(tmp); } catch (e){}
+  if (r.error && dom.length === 0) return null;
+  const m = dom.match(/<title>FLOAT_PROBE:([^<]*)<\/title>/);
+  if (!m) return 'SKIP:未抓到探针（Chrome 输出 ' + dom.length + ' 字符）';
+  try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
+}
+{
+  const got = skipped('③-n') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessFloatGate();
+  if (got === null){
+    console.log('⏸ 行为断言（浮标不遮挡）：本进程无法启动 Chrome，此项需外部验证'); manual++;
+  } else if (typeof got === 'string'){
+    console.log('⏸ 行为断言（浮标不遮挡）：' + got.slice(5) + '，此项需外部验证'); manual++;
+  } else if (got.err){
+    console.log('⏸ 行为断言（浮标不遮挡）：' + got.err + '（示例数据里没有前置词条），此项需外部验证'); manual++;
+  } else if (got.overlap > 0 || got.gap < 55 || got.gap > 57 || got.flW > 176 || got.sideDisplay !== 'none'){
+    console.log('✗ 行为断言（浮标不遮挡）：间距 ' + got.gap + 'px（应 56±1）、浮标宽 ' + got.flW + 'px（应 ≤176）、' +
+      '与侧栏重叠 ' + got.overlap + 'px（应 0）、侧栏 display=' + got.sideDisplay + '（详情页应为 none）'); fail++;
+  } else {
+    console.log('✓ 行为断言（浮标不遮挡）：浮标距正文 ' + got.gap + 'px、宽 ' + got.flW + 'px、与侧栏重叠 0、详情页无侧栏');
   }
 }
 

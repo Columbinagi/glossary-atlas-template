@@ -25,7 +25,7 @@
      都按 iframe 视口生效，等价于真机宽度；每档再回读一次实际 innerWidth，
      与目标不符就点名列进问题清单，不再「假装测过」。
 
-   需要无头 Chrome（路径常量与 engineering/校验.mjs:18 相同）；
+   需要无头 Chrome（路径常量与 校验.mjs 同口径，可用 JC_CHROME 覆盖）；
    本进程起不了 Chrome 时记「需外部验证」并退出 0，不误判为失败。
    ============================================================ */
 import fs from 'fs';
@@ -36,7 +36,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
-const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const CHROME = process.env.JC_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
 /* 产物：命令行给了 .html 就体检它，否则取 dist/ 下第一个 .html
    （不写死文件名，等价于承认「接线点 1」尚未统一） */
@@ -137,9 +137,21 @@ const PROBE = `<script>
         }
       });
     }
+    /* v2（2026-10-25）：横向 chip 条（主题 / 分类）是**故意可横向滚动**的容器，
+       里面的元素按设计就会越出视口右缘 —— 判越界前先看有没有可横向滚动的祖先。
+       只豁免这一种情况；真正的布局溢出（没有滚动容器兜着）仍然照报。 */
+    function inScrollX(el){
+      var p = el.parentElement;
+      while (p && p !== document.body){
+        var ox = getComputedStyle(p).overflowX;
+        if (ox === 'auto' || ox === 'scroll') return true;
+        p = p.parentElement;
+      }
+      return false;
+    }
     Array.prototype.forEach.call(document.querySelectorAll('.card, .topic-chip, .side, .wrap, .sec, .topic-heading h1'), function(el){
       var r = el.getBoundingClientRect(); if (r.width === 0 || r.height === 0) return;
-      if (r.right > innerWidth + 2) push('元素越出右边界：' + lab(el));
+      if (r.right > innerWidth + 2 && !inScrollX(el)) push('元素越出右边界：' + lab(el));
       if (el.children.length === 0 && el.scrollWidth > el.clientWidth + 2) push('文本被截断：' + lab(el));
     });
     try { parent.postMessage(JSON.stringify(out), '*'); } catch (e){}

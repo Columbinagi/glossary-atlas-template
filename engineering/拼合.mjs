@@ -10,7 +10,8 @@ import { fileURLToPath } from 'url';
 import { parseKnowledgeDir, serializeTerms, parseChangelogMd } from './lib-md.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const TEMPLATE = path.join(ROOT, 'templates', '词条图鉴模板-v5.html');
+/* v2（批次 1）：默认母版切到 v6；v5 保留作回退（JC_TEMPLATE 可指回 v5） */
+const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
 const CONTENT_DIR = path.join(ROOT, 'content');
 const KB_DIR = path.join(CONTENT_DIR, '知识库');
 const KB_EN_DIR = path.join(CONTENT_DIR, '知识库-en');

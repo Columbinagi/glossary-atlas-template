@@ -267,9 +267,6 @@ body.is-term .main{max-width:var(--detail-max);margin:0 auto;padding:28px 32px 0
 .cl-crumb .sep{color:var(--text-3)}   /* v1.1.3（续 9）：原为 var(--border)（#e5e6eb，白底 1.25:1、深色 1.40:1，几乎不可见）；分隔符改用次级文字色 */
 .cl-crumb .cur{color:var(--text-2)}
 @media (max-width:900px){ .cl-side{display:none} }
-/* v1.1.3（统一主栏左边界）：页面级视图（更新日志 / 自测 / 对比）本就不渲染左栏，
-   但主区要落在与目录型视图相同的那条竖线上——补出「内边距 24 + 侧栏 208 + 间距 28」的位置。
-   ≥961 才需要补：≤960 时目录型视图的侧栏也是收进抽屉的，两边本来就都从容器内边距起。 */
 /* v2：页面级视图改为居中单栏，不再补「侧栏 208 + 间距」的左边界（旧口径已废止） */
 /* v5（2026-09-26）：回到顶部浮动按钮（列表 / 搜索 / 收藏 / 更新日志视图；详情页有自己的返回链路，不叠加） */
 .back-top{position:fixed;right:22px;bottom:26px;z-index:60;width:40px;height:40px;border-radius:12px;
@@ -1426,9 +1423,10 @@ html[data-theme="dark"] .card:hover{border-color:#333b49}
   .page-toc{padding:8px 10px;margin-bottom:18px}
   .toc-title{display:none}
 }
-/* 触屏设备（含触屏笔记本）的顶栏控件补到 44px 可点高度 */
+/* 触屏设备（含触屏笔记本）：顶栏与列表控件补到 44px 可点高度 */
 @media (any-pointer: coarse){
   .nav-fav,.nav-search,.nav-brand,.nav-color,.theme-btn,.kbd-btn,.lang-btn,.nav-links a{min-height:44px}
+  .topic-chip,.side-cat,.back-btn,.tbtn,.float-nav{min-height:44px}
 }
 /* v2：上下条三级退化 —— 与参考站实测同值（1440 / 1240 / 1140） */
 @media (max-width:1440px){

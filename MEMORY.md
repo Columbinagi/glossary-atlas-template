@@ -12,9 +12,10 @@
 ## 2. 当前状态（最新在上）
 
 - **20261025 · v2.0.0 已发布（GitHub）**
-  - `push main` ＋ tag **`v2.0.0`** ＋ GitHub Release；**v1.1.6 并入本版**，不单独发 tag。
+  - `push main`（`00c9754..4e5dde7`）＋ tag **`v2.0.0`** ＋ [GitHub Release](https://github.com/Columbinagi/glossary-atlas-template/releases/tag/v2.0.0)；**v1.1.6 并入本版**，不单独发 tag。
+  - **CI**：首跑 **success**（run `40194806691`，13s）。
   - 发布前：独立审计无阻断项；两处 docs 修复（14→15、11→12）；敏感扫描 **0 命中**；审计净室已清（1.9 MB）。
-  - 发布后：回拉核对 `git show v2.0.0:<file>`；CI 结果见 `ROADMAP.md` §三。
+  - 发布后：回拉核对 `git diff v2.0.0` 为空、v6 blob `d456045e…` 与 tag 一致。
   - **下一步**：派生项目按 tag `v2.0.0` 重建（每项目单独分支、单独 Agent）。
 
 - **20261025 · v2 批次 6 完成（收口：v5 legacy / CI 15 文件 / 文档与验收登记）**

@@ -42,7 +42,7 @@
 - **体检**：中英各 **64/64**（16 档 × 4 视图），全清；320–1600 共 32 张截图落 `logs/20261025-v2取证/shots/b5-*`。
 - **产物可复现**：两次 SHA256 同为 **`66FC4272…` / 368,670 字节**（v1.1.6 的 v5 产物为 379,192 字节，本版 **−10,522 B**）。
 - **浮标几何**：1600px 下浮标右缘距正文 **56px**、宽 172px、与侧栏重叠 0；v5 同场景间距 15px、侧栏可见 → 判红。
-- **发布**：`push main` ＋ tag `v2.0.0` ＋ GitHub Release；CI 结果见 GitHub Actions（发布后补记）。
+- **发布**：`push main`（`00c9754..4e5dde7`）＋ tag `v2.0.0` ＋ [GitHub Release](https://github.com/Columbinagi/glossary-atlas-template/releases/tag/v2.0.0)；CI **success**（run `40194806691`，13s）。
 - **未验**：Safari / Firefox；真机触屏 44px；v6 首屏 FCP/DCL。
 
 ## v1.1.6 — 2026-10-25

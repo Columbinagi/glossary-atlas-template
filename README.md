@@ -57,7 +57,7 @@ node engineering/预览服务.mjs   # 本地预览 http://localhost:8123/
 5. **`内容规范.md` 与 `skills/` 的正文**是按源项目写的 → 结构可沿用，举例的术语、主题名、行业名要换成你的。
 6. **本仓库的 7 份管理文档要删掉或改写**（`AGENTS.md` `MEMORY.md` `PRD.md` `ROADMAP.md` `ACCEPTANCE.md` `SOUL.md` `USER.md`）→ 它们写的是"词条图鉴模板"这个项目自己怎么干活，`Use this template` 会把它们一起带过去；不处理的话，你的 Agent 每次会话自动加载的是**别人的规矩**。要么删，要么照它们把内容换成你自己的（推荐后者 —— 这套骨架文档本身就是给你省事的）。
 
-派生完成后，在自己的 README 或 `CONTRACT.md` 里记一行「派生自 glossary-atlas-template v1.1.5（commit &lt;短哈希&gt;）」，将来模板升级才追得回差异。
+派生完成后，在自己的 README 或 `CONTRACT.md` 里记一行「派生自 glossary-atlas-template v1.1.6（commit &lt;短哈希&gt;）」，将来模板升级才追得回差异。
 
 ### 骨架的权威在哪（已经派生过就看这里）
 
@@ -84,12 +84,12 @@ git hash-object templates/词条图鉴模板-v5.html
 
 ## 版本与来源
 
-- **当前版本**：`v1.1.5`（2026-10-10）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **当前版本**：`v1.1.6`（2026-10-25，**本地已定版，尚未上传 / 打 tag**；GitHub Releases 里最新仍是 `v1.1.5`）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
 - **来源**：骨架 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`。其中 **11 个仍与 `af88476` 逐字节一致**（SHA256 全等，2026-10-08 独立复核）；**3 个已偏离**——`templates/词条图鉴模板-v5.html`（自 v1.1.2 起；2026-10-09 续 18 实测累计 **+694 / −118、62 个 hunk**，v1.1.5 又加 F5 / F6 / F7 三块，口径与旧读数的差异见 [CHANGELOG.md](CHANGELOG.md) 续 14）、`.gitignore`（2026-10-08 补通用规则，含 `logs/`；原因是本项目缺过程产物落点）、`engineering/校验.mjs`（2026-10-08 起新增 ③-c ～ ③-m **十一条**行为断言闸门与 `--strict`；来历见 CHANGELOG 续 12 / 续 14 / 续 15 / 续 16 / 续 17 / 续 18 / 续 19 / 续 20）。逐条来历与实测见 [CHANGELOG.md](CHANGELOG.md)——此处不再枚举，免得枚举落后于实现。
   - **「14 个」的口径**：指 `.github/workflows/smoke.yml` 里那份骨架清单（14 个文件，**不含** `README.md` / `LICENSE` / `CHANGELOG.md`，也不含 2026-10-08 补建的 `AGENTS.md` `PRD.md` 等 7 份项目文档——那 7 份是**本项目自己怎么干活**的规矩，派生时不用搬）。若按「与 `af88476` 同路径」去数会得到 15 个文件：多出来的那份 `README.md` 在源提交里是源项目自己的 README，本仓库的是重写版，**从不曾逐字节一致**，故不在其列。
   - **未含**该项目任何内容数据、进度文档与产物；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
-- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.5（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
+- **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v1.1.6（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
 
 ## 许可证
 

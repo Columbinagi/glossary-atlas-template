@@ -27,14 +27,14 @@ jobs:
       - name: 确认站点文件已产出
         run: test -n "$(ls dist/*.html)"
 
-      - name: 确认骨架 14 个文件仍在（防误删）
+      - name: 确认骨架 15 个文件仍在（防误删）
         run: |
           for f in CONTRACT.md .gitattributes .gitignore \
                    content/站点配置.js content/内容规范.md \
                    engineering/lib-md.mjs engineering/拼合.mjs engineering/收录草稿.mjs \
                    engineering/校验.mjs engineering/重排编号.mjs engineering/预览服务.mjs \
                    skills/term-card-draft/SKILL.md skills/term-card-publish/SKILL.md \
-                   templates/词条图鉴模板-v5.html ; do
+                   templates/词条图鉴模板-v5.html templates/词条图鉴模板-v6.html ; do
             test -f "$f" || { echo "缺少骨架文件: $f"; exit 1; }
           done
-          echo "骨架 14 个文件齐全"
+          echo "骨架 15 个文件齐全"

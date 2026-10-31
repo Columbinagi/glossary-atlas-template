@@ -84,12 +84,19 @@ git hash-object templates/词条图鉴模板-v6.html
 
 ## 版本与来源
 
-- **当前版本**：`v2.0.0`（2026-10-25，**本次发布**；GitHub Releases 最新为 `v2.0.0`）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **当前版本**：`v2.1.0`（2026-10-31，**本地候选，待发布**；线上最新仍为 `v2.0.0`）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
-- **来源**：骨架**原先** 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`；**v2.0.0 起新增 `templates/词条图鉴模板-v6.html`（默认引擎），骨架清单变为 15 个**。原 14 个中 **11 个仍与 `af88476` 逐字节一致**（SHA256 全等，2026-10-08 独立复核）；**3 个已偏离**——`templates/词条图鉴模板-v5.html`（自 v1.1.2 起；2026-10-09 续 18 实测累计 **+694 / −118、62 个 hunk**，v1.1.5 又加 F5 / F6 / F7 三块，口径与旧读数的差异见 [CHANGELOG.md](CHANGELOG.md) 续 14）、`.gitignore`（2026-10-08 补通用规则，含 `logs/`；原因是本项目缺过程产物落点）、`engineering/校验.mjs`（2026-10-08 起新增 ③-c ～ ③-m **十一条**行为断言闸门与 `--strict`；v2 又加 ③-n，共 **十二条**；来历见 CHANGELOG 续 12 / 续 14 / 续 15 / 续 16 / 续 17 / 续 18 / 续 19 / 续 20 与 v2.0.0 段）。逐条来历与实测见 [CHANGELOG.md](CHANGELOG.md)——此处不再枚举，免得枚举落后于实现。
-  - **「15 个」的口径**：指 `.github/workflows/smoke.yml` 里那份骨架清单（15 个文件，**不含** `README.md` / `LICENSE` / `CHANGELOG.md`，也不含 2026-10-08 补建的 `AGENTS.md` `PRD.md` 等 7 份项目文档——那 7 份是**本项目自己怎么干活**的规矩，派生时不用搬）。v2.0.0 多出的那一份是 `templates/词条图鉴模板-v6.html`（新默认引擎）；**`v5` 保留作回退（legacy）**，v2.1.0 再移入 `archive/`。
+- **来源**：骨架**原先** 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`；**v2.0.0 起新增 `templates/词条图鉴模板-v6.html`（默认引擎）**。**v2.1.0 把这套引擎整体收编自一个已上线案例项目**——母版 / `校验.mjs` / `拼合.mjs` 三件逐字节对齐，来源与影响面见 [CHANGELOG.md](CHANGELOG.md) v2.1.0 段。v1.x 的 `templates/词条图鉴模板-v5.html` 已**退役删除**（Git 历史可恢复：`git show v2.0.0:templates/词条图鉴模板-v5.html`）。
+  - **「14 个」的口径**：指 `.github/workflows/smoke.yml` 里那份骨架清单（14 个文件，**不含** `README.md` / `LICENSE` / `CHANGELOG.md`，也不含 `AGENTS.md` `PRD.md` 等 7 份项目文档——那 7 份是**本项目自己怎么干活**的规矩，派生时不用搬）。母版只有 `templates/词条图鉴模板-v6.html` 一份。
   - **未含**该项目任何内容数据、进度文档与产物；文件注释里留有指向源项目内部文档的悬空引用，清单同见 [docs/派生与排错.md](docs/派生与排错.md) 第三节。
 - **派生时请在自己项目里记一行**「派生自 glossary-atlas-template v2.0.0（commit &lt;短哈希&gt;）」—— 将来模板升级，这条记录是唯一能对齐差异的线索。
+
+## 规矩在哪（**本文不抄**）
+
+> **本项目怎么干活**（目录结构、产物落点、命名规则、工作流、维护义务）**只有一处正文：`AGENTS.md`** —— 新会话按 `AGENTS.md` §零 的最小集开场先读它。
+> 需求基准在 `PRD.md`，线间契约在 `CONTRACT.md`，进度在 `MEMORY.md` / `ROADMAP.md`。
+> **本文只回答四件事**：这是什么 ／ 怎么装 ／ 怎么用 ／ 现在什么版本。规矩抄一份过来就是「第二处正文」—— 两处必然各自漂移。
+> **派生项目请把本文与 7 份治理文档删改重写**：它们写的是「本项目自己怎么干活」，不是骨架的一部分。
 
 ## 许可证
 

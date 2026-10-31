@@ -837,7 +837,33 @@ function headlessA11yGate(){
     if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
     return 'rgb(' + parseInt(h.slice(0,2),16) + ', ' + parseInt(h.slice(2,4),16) + ', ' + parseInt(h.slice(4,6),16) + ')';
   }
+  /* 2026-10-28：允许「焦点由外层容器承载」——有些输入框刻意不画自身焦点环，把焦点表达交给外面那层壳
+     （参考站做法，使用者指定对齐）。判据不放松：本函数实测祖先容器在**聚焦态与失焦态**下的
+     边框色 / 阴影 / 底色有没有变化；真有可见变化才通过，不是按选择器白名单放行。 */
+  function stylesOf(node){
+    var s = getComputedStyle(node);
+    return s.borderTopColor + '|' + s.borderBottomColor + '|' + s.boxShadow + '|' + s.backgroundColor;
+  }
+  function hostRing(n){
+    var chain = [], p = n.parentNode;
+    while (p && p !== document.documentElement){ chain.push(p); p = p.parentNode; }
+    if (!chain.length) return false;
+    var before = [], k;
+    for (k = 0; k < chain.length; k++) before.push(stylesOf(chain[k]));
+    n.blur();
+    var after = [];
+    for (k = 0; k < chain.length; k++) after.push(stylesOf(chain[k]));
+    n.focus();
+    for (k = 0; k < before.length; k++){
+      if (before[k] !== after[k]) return true;
+    }
+    return false;
+  }
   function start(){
+    /* 焦点态 / 失焦态要即时读值：先关掉过渡与动画，否则读到的是插值中间值 */
+    var kill = document.createElement('style');
+    kill.textContent = '*{transition:none!important;animation:none!important}';
+    document.head.appendChild(kill);
     out.brandHex = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim();
     var brand = hex2rgb(out.brandHex);
     out.brandRgb = brand;
@@ -870,7 +896,9 @@ function headlessA11yGate(){
       counted++;
       try { n.focus(); } catch (e){ continue; }
       var c = getComputedStyle(n);
-      if (!(c.outlineStyle === 'solid' && c.outlineColor === brand && c.outlineWidth === '2px')){
+      var ringOk = (c.outlineStyle === 'solid' && c.outlineColor === brand && c.outlineWidth === '2px');
+      if (!ringOk) ringOk = hostRing(n);
+      if (!ringOk){
         out.ringBad.push((n.id ? '#' + n.id : (n.className && typeof n.className === 'string' && n.className.trim() ? '.' + n.className.trim().split(/\\s+/)[0] : n.tagName.toLowerCase())) +
           ' → ' + c.outlineStyle + ' ' + c.outlineWidth + ' ' + c.outlineColor);
       }
@@ -1191,6 +1219,10 @@ function headlessCatSpyGate(){
   const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');
   let html;
   try { html = fs.readFileSync(TEMPLATE, 'utf8'); } catch (e){ return 'SKIP:读不到 templates/词条图鉴模板-v6.html'; }
+  const spyAnchor = 'function syncCatActive(){';
+  if (!html.includes(spyAnchor)) return 'SKIP:找不到分类高亮函数';
+  // 高亮函数封装在 IIFE 内；只在临时测试页暴露入口，避免点击主题重绘被测节点。
+  html = html.replace(spyAnchor, 'window.__jcSyncCatActive = syncCatActive;\n' + spyAnchor);
   const probe = `
 <script>(function(){
   function report(o){ document.title = 'CATSPY_PROBE:' + JSON.stringify(o); }
@@ -1204,16 +1236,11 @@ function headlessCatSpyGate(){
     var chip = document.querySelector('#topicChips .topic-chip[aria-pressed="true"]') || document.querySelector('#topicChips .topic-chip');
     if (!chip){ report({ err: 'no-chip' }); return; }
     var topic = chip.getAttribute('data-topic');
-    /* ⚠️ 先把 hash 落到目标主题：否则后面点芯片会「updateHash 里换 hash」+「hashchange」触发**两次**渲染，
-       第二次渲染发生在 scrollTo(0,0) 之后，会把侦测结果清掉 —— 闸门就永远读不到中间那一次。
-       hash 已在目标上时 updateHash() 只会 renderApp() 一次，侦测在"我们设好的滚动位置"上跑完即定局。 */
+    /* 先完成主题导航，再构造滚动位置。 */
     if (location.hash !== '#topic=' + topic){ location.hash = '#topic=' + topic; setTimeout(run, 900); }
     else run();
     function run(){
       var secs = document.querySelectorAll('#topicView [data-catsec]');
-      /* ⚠️ 芯片要重新取：上面那次导航重渲了侧栏，旧引用已脱离 DOM（点它不会冒泡到 document） */
-      var chip2 = document.querySelector('#topicChips .topic-chip[aria-pressed="true"]') || document.querySelector('#topicChips .topic-chip');
-      if (!chip2){ report({ err: 'no-chip-2' }); return; }
       var se = document.scrollingElement, max = se.scrollHeight - innerHeight;
       var target = -1, sec = null, need = -1;
       for (var k = secs.length - 1; k >= 0; k--){
@@ -1224,16 +1251,10 @@ function headlessCatSpyGate(){
       if (!sec){ report({ err: 'no-placeable-section', maxScroll: Math.round(max) }); return; }
       window.scrollTo(0, need);
       var topAtSpy = sec.getBoundingClientRect().top;   /* 立刻量：这就是侦测函数将看到的输入 */
-      /* ⚠️ 这一项不能靠滚动事件驱动：--virtual-time-budget 下 rAF 只跑一次、scroll 事件不触发
-         （实测 ticks=1 / scrollEvents=0），挂在 scroll+rAF 上的 syncCatActive 在闸门里不会跑。
-         v2 批次 1 修正：也不再「点当前芯片触发重渲」—— 重渲会 window.scrollTo(0,0)，
-         随后的滚动事件会把高亮冲回第 0 个（实测 scrollYAfter=0，闸门假红）。
-         改为直接调同步函数，在「分节停在 90px」这一刻量结果；函数不在全局时才退回点击。 */
-      if (window.syncCatActive) window.syncCatActive(); else chip2.click();
-      setTimeout(function(){
-        report({ top: Math.round(topAtSpy * 100) / 100, on: onIdx(), target: target, btns: btns.length,
-          margin: getComputedStyle(sec).scrollMarginTop, scrollYAfter: Math.round(window.scrollY) });
-      }, 700);
+      /* 虚拟时间下不依赖 scroll/rAF；在同一任务内调用并取样，保持被测几何与高亮同源。 */
+      window.__jcSyncCatActive();
+      report({ top: Math.round(topAtSpy * 100) / 100, on: onIdx(), target: target, btns: btns.length,
+        margin: getComputedStyle(sec).scrollMarginTop, scrollYAfter: Math.round(window.scrollY) });
     }
   }
   if (document.readyState === 'complete') setTimeout(start, 500);
@@ -1251,14 +1272,7 @@ function headlessCatSpyGate(){
   try { return JSON.parse(decodeProbeTitle(m[1])); } catch (e){ return 'SKIP:探针结果解析失败（' + m[1] + '）'; }
 }
 {
-  let got = skipped('③-i') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessCatSpyGate();
-  /* v2（批次 0）：本闸门在满负荷连跑时偶发抖动（20261025 基线实测：整轮判红、单独跑稳定绿——
-     场景靠 chip.click() 触发重渲，前一条 ③-h 刚回收浏览器，虚拟时间预算可能不够）。
-     重试 1 次，两次都红才判红 —— 判据不变，只降低环境抖动造成的假红。 */
-  if (!skipped('③-i') && got && typeof got === 'object' &&
-      (got.err || got.on === 'multiple' || got.on !== got.target || Math.abs(got.top - 90) > 1.5)){
-    got = headlessCatSpyGate();
-  }
+  const got = skipped('③-i') ? 'SKIP:JC_SKIP 指定跳过（分小批跑）' : headlessCatSpyGate();
   if (got === null){
     console.log('⏸ 行为断言（分类高亮跟随）：本进程无法启动 Chrome，此项需外部验证');
     manual++;
@@ -1282,7 +1296,7 @@ function headlessCatSpyGate(){
 
 /* ③-n 行为断言（v2 批次 1 新增）：详情页上下条浮标不得压住侧栏、不得侵占正文空档。
    判据：浮标右缘 → 正文左缘 = 56px（±1，token --float-gap）、浮标宽 ≤176、详情页无侧栏、
-   与侧栏零重叠。v5 的红证据：间距固定 14px，170px 宽时与 208px 侧栏重叠 156px
+   与侧栏零重叠。v2.0.0 历史版母版（v5，v2.1.0 已删除）的红证据：间距固定 14px，170px 宽时与 208px 侧栏重叠 156px
    （实测见 notes/20261025_参考站REA取证.md §5）。 */
 function headlessFloatGate(){
   const TEMPLATE = process.env.JC_TEMPLATE ? path.resolve(process.env.JC_TEMPLATE) : path.join(ROOT, 'templates', '词条图鉴模板-v6.html');

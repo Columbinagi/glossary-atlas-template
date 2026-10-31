@@ -1,11 +1,12 @@
 /* ============================================================
-   engineering/拼合.mjs —— 把「content/」数据源合入 V5 引擎，产出站点唯一文件
+   engineering/拼合.mjs —— 把「content/」数据源合入母版引擎，产出站点唯一文件
    用法：node engineering/拼合.mjs
    权威源（2026-09-19 21:10 起）= content/知识库/*.md（Markdown 知识库）；
    content/站点配置.js 是站点级配置。产物数据区勿手改（会被下次拼合覆盖）。
    ============================================================ */
 import fs from 'fs';
 import path from 'path';
+import vm from 'vm';
 import { fileURLToPath } from 'url';
 import { parseKnowledgeDir, serializeTerms, parseChangelogMd } from './lib-md.mjs';
 
@@ -20,7 +21,7 @@ const OUT = path.join(ROOT, 'dist', '新能源汽车知识图鉴.html');
 const MARK_CFG = '/* ================== 模块配置区：接入时必改 ================== */';
 const MARK_ENG = '/* ================== 引擎（以下无需改动） ================== */';
 
-/* 引擎头尾来自 V5 母版 */
+/* 引擎头尾来自母版（默认 v6；JC_TEMPLATE 可指回 v5 做红绿对照） */
 const tpl = fs.readFileSync(TEMPLATE, 'utf8');
 const pCfg = tpl.indexOf(MARK_CFG), pEng = tpl.indexOf(MARK_ENG);
 if (pCfg < 0 || pEng < 0 || pEng < pCfg) throw new Error('母版标记定位失败');
@@ -81,10 +82,51 @@ const kb =
   serializeTerms(terms) + '\n' +
   (termsEn.length ? serializeTerms(termsEn, 'KB_TERMS_EN') : 'var KB_TERMS_EN = null;');
 
-const out = head + cfg + '\n' + cl + '\n' + clEn + '\n' + kb + tail;
+/* —— 本项目补丁：静态分享卡元数据（2026-10-08 立；2026-10-25 v2 重建时在 v6 基底上重写，非旧码贴回）——
+   为什么需要：链接被分享到微信 / 飞书 / X / Slack 时，抓取方不执行 JS、只读 <head> 里的静态标签，
+   母版的 <title>词条图鉴模板</title> 只是占位。这里按 SITE_META 生成真标题 ＋ description / og / twitter
+   共 10 个静态标签，让分享出去的预览卡有标题、有描述。
+   · og:image 有意留空：单文件形态下图片只能内联成 data-URI，抓取方不取；要图必须先有托管 URL。
+   · 全部是静态文本，不产生任何外部请求——零外部请求红线不受影响。
+   · 与引擎运行时 document.title 分工：这里管「分享出去长什么样」，引擎管「浏览器标签页里长什么样」。
+   ⚠ 上游无此块：骨架同步时保留本地版（分叉登记见 CONTRACT.md §四）。 */
+const cfgCtx = {};
+vm.createContext(cfgCtx);
+vm.runInContext(cfg, cfgCtx, { filename: 'content/站点配置.js（数据区）' });
+const SM = cfgCtx.SITE_META || {};
+const TOPIC_N = (cfgCtx.TOPICS || []).length;
+function escMeta(s){
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+const BRAND = SM.brandName || SM.pageTitle || '';
+if (!BRAND) throw new Error('SITE_META 缺 brandName / pageTitle，无法生成静态分享卡元数据');
+const DESC = BRAND + (SM.brandTagline ? ' · ' + SM.brandTagline : '') +
+  ' —— ' + TOPIC_N + ' 个主题 · ' + terms.length + ' 张卡片，单文件离线可用的学习图鉴';
+const SHARE_HEAD =
+  '<!-- 静态分享卡元数据：由 engineering/拼合.mjs 按 SITE_META 生成（抓取方不执行 JS，故必须静态写在 head 里；勿手改） -->\n' +
+  '<title>' + escMeta(BRAND) + '</title>\n' +
+  '<meta name="description" content="' + escMeta(DESC) + '">\n' +
+  '<meta property="og:type" content="website">\n' +
+  '<meta property="og:site_name" content="' + escMeta(BRAND) + '">\n' +
+  '<meta property="og:title" content="' + escMeta(BRAND) + '">\n' +
+  '<meta property="og:description" content="' + escMeta(DESC) + '">\n' +
+  '<meta property="og:locale" content="zh_CN">\n' +
+  '<meta property="og:locale:alternate" content="en_US">\n' +
+  '<meta name="twitter:card" content="summary">\n' +
+  '<meta name="twitter:title" content="' + escMeta(BRAND) + '">\n' +
+  '<meta name="twitter:description" content="' + escMeta(DESC) + '">';
+const TITLE_RE = /<title>[^<]*<\/title>/;
+const titleHits = head.match(new RegExp(TITLE_RE.source, 'g'));
+if (!titleHits || titleHits.length !== 1){
+  throw new Error('母版 head 里 <title> 不是恰好 1 处（实为 ' + (titleHits ? titleHits.length : 0) + ' 处），拒绝注入分享卡元数据');
+}
+const headOut = head.replace(TITLE_RE, SHARE_HEAD);
+
+const out = headOut + cfg + '\n' + cl + '\n' + clEn + '\n' + kb + tail;
 fs.writeFileSync(OUT, out);
 console.log('拼合完成 →', OUT);
 console.log('  权威源：content/知识库/*.md（' + terms.length + ' 条词条）+ content/站点配置.js + content/更新日志.md（' + clCount + ' 条）');
 console.log('  更新日志英文：' + (clEnCount ? 'content/更新日志-en.md（' + clEnCount + ' 条）' : '无 → CHANGELOG_EN = null'));
 console.log('  英文分册：content/知识库-en/*.md（' + (termsEn.length ? termsEn.length + ' 条' : '无 → KB_TERMS_EN = null') + '）');
-console.log('  引擎：  V5 母版（head ' + head.length + ' + 数据 ' + (cfg.length + kb.length) + ' + tail ' + tail.length + ' = ' + out.length + ' 字符）');
+console.log('  引擎：  ' + path.basename(TEMPLATE) + '（head ' + headOut.length + ' + 数据 ' + (cfg.length + kb.length) + ' + tail ' + tail.length + ' = ' + out.length + ' 字符）');
+console.log('  分享卡： <title>' + BRAND + '</title> ＋ description / og / twitter 共 10 个静态标签（og:image 有意留空：单文件形态取不到）');

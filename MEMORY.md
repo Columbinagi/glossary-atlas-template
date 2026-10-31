@@ -7,16 +7,18 @@
 ## 1. 项目概况
 
 **单文件、零外部请求的「术语图鉴」引擎母版 ＋ 内容 / 工程双线骨架**（PRO 版）。拿它派生一个新主题的图鉴站：内容线只写 Markdown，工程线一条命令出成品。
-**当前阶段：** v2.1.0 **本地候选**（引擎收编完成，待发布授权）；线上最新为 `v2.0.0`。
+**当前阶段：** **v2.1.0 已发布**（2026-10-31，线上最新）；上一版 `v2.0.0`。
 
 ## 2. 当前状态（最新在上）
 
-- **20261031 · v2.1.0 候选完成（引擎收编 ＋ 旧件精简 ＋ 规矩补强）**
+- **20261031 · v2.1.0 已发布（引擎收编 ＋ 旧件精简 ＋ 规矩补强）**
   - **引擎三件整份换入**自一个已上线案例项目（提交 `dcabcc8`，v1.2.0 线上核对通过）：v6 母版 **442,983 B / 6,216 行**、`校验.mjs` **87,046 B**、`拼合.mjs` **9,484 B**（逐字节对齐）。
   - **删 6 件**：v5 母版（Git 可恢复）、`docs/plans/` 4 份一次性计划、`docs/验收页_20261008.html`；骨架清单 **15 → 14**（`smoke.yml` 同步）。
   - **规矩补强**：AGENTS §零 接手入口 / 授权三层 / 领地声明 / 汇报先路径后结论 / §八 C 复验；SOUL 协作位（主控/执行）；README「规矩在哪（本文不抄）」；ROADMAP §零 新对话起手式；ACCEPTANCE 维护口径；CONTRACT 收编来源。
-  - **验证**：见 `CHANGELOG.md` v2.1.0「本版实测」（本轮净室与闸门跑完后补）。
-  - **未做**：未 push、未打 tag、未建 Release —— 等使用者明确授权。
+  - **验证**：见 `CHANGELOG.md` v2.1.0「本版实测」。
+  - **已发布（2026-10-31）**：`main` `ef9aeda..e491f80`（5 个提交）＋ tag `v2.1.0`（对象 `45adcff1…`）＋ [GitHub Release](https://github.com/Columbinagi/glossary-atlas-template/releases/tag/v2.1.0)；CI `smoke` **success**（run `41209143669`，含「骨架 14 个文件仍在」）。
+  - **推送方式（可复用经验）**：本机 `github.com:443` 经代理返回 502、直连 21s 超时，`git push` / `git ls-remote` 不可用；改用 `api.github.com` 的 Git Data 接口逐提交重建（blob → tree → commit，每步比对 SHA），远端 commit 与 tag 对象 SHA 与本地**逐字节一致**，随后网络间歇恢复，`git fetch` / `ls-remote` 复核通过。注意两个坑：`base_tree` 必须取**父**提交的树；annotated tag 的 message 必须**原样含结尾换行**，裁掉会得到另一个对象（`41640748…`）。复现脚本：`logs/publish-20261031/`（不进版本库）。
+  - **回拉核对**：v6 母版 `769f484f…`（本地工作区 / tag 内 / 远端 API 回拉重算，三处一致；442,983 字节，`diff` 逐字节相同）。
 
 - **20261025 · v2.0.0 已发布（GitHub）**
   - `push main`（`00c9754..4e5dde7`）＋ tag **`v2.0.0`** ＋ [GitHub Release](https://github.com/Columbinagi/glossary-atlas-template/releases/tag/v2.0.0)；**v1.1.6 并入本版**，不单独发 tag。

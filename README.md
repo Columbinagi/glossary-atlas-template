@@ -84,7 +84,7 @@ git hash-object templates/词条图鉴模板-v6.html
 
 ## 版本与来源
 
-- **当前版本**：`v2.1.0`（2026-10-31，**本地候选，待发布**；线上最新仍为 `v2.0.0`）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
+- **当前版本**：`v2.1.0`（2026-10-31，**已发布**）—— 逐版变更见 [CHANGELOG.md](CHANGELOG.md)，可下载的历史版本见 [Releases](https://github.com/Columbinagi/glossary-atlas-template/releases)。
 - **怎么更新到新版**：模板是「拷骨架」而不是「装依赖」——把 `templates/`、`engineering/`、`skills/`、`CONTRACT.md`、`.gitattributes`、`.gitignore` 与新版逐个对比后自行合并，**不要覆盖你的 `content/`**；行号与改法见 [docs/派生与排错.md](docs/派生与排错.md)。
 - **来源**：骨架**原先** 14 个文件自一个已在运行的图鉴项目抽出，源提交 `af88476`；**v2.0.0 起新增 `templates/词条图鉴模板-v6.html`（默认引擎）**。**v2.1.0 把这套引擎整体收编自一个已上线案例项目**——母版 / `校验.mjs` / `拼合.mjs` 三件逐字节对齐，来源与影响面见 [CHANGELOG.md](CHANGELOG.md) v2.1.0 段。v1.x 的 `templates/词条图鉴模板-v5.html` 已**退役删除**（Git 历史可恢复：`git show v2.0.0:templates/词条图鉴模板-v5.html`）。
   - **「14 个」的口径**：指 `.github/workflows/smoke.yml` 里那份骨架清单（14 个文件，**不含** `README.md` / `LICENSE` / `CHANGELOG.md`，也不含 `AGENTS.md` `PRD.md` 等 7 份项目文档——那 7 份是**本项目自己怎么干活**的规矩，派生时不用搬）。母版只有 `templates/词条图鉴模板-v6.html` 一份。
